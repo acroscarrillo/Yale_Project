@@ -12,14 +12,21 @@ function H_eff(N, Δ, K, ϵ_1, ϵ_2)
     return Δ*(A'*A) - K*(A'^2)*(A^2) + ϵ_1*(A' + A) + ϵ_2*(A'^2 + A^2)
 end
 
-# Define H_sk model as in https://arxiv.org/pdf/2209.03934.pdf
+# Define H_sk model as in (2) of https://arxiv.org/pdf/2209.03934.pdf
 function H_sk(N, ϵ_2_by_K)
-    return H_eff(N, 0, 1, 0, ϵ_2_by_K)
+    A = a(N)
+    return   ϵ_2_by_K*(A'^2 + A^2) + (A'^2)*(A^2) + (A' + A)
+end
+
+function H_sk_2(N, ϵ_2_by_K)
+    A = a(N)
+    n = a(N)'*a(N)
+    return 2*n+I(N)-0.25*(2*n+I(N))^2 + ϵ_2_by_K*(A^2 + A'^2)
 end
 
 # Define parameter space
-N = 20
-ϵ_2_by_K_array = Vector(0:0.2:40)
+N = 40
+ϵ_2_by_K_array = Vector(0:0.1:40)
 
 # Define data form
 data_array = zeros( N*length(ϵ_2_by_K_array), 3 ) # E_n  ϵ_2_by_K  N
