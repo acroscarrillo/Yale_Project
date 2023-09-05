@@ -44,4 +44,4 @@ end
 
 # Store data
 df_wb = DataFrame(data_array, ["E_n","ϵ_2_by_K","N"])
-CSV.write("data/H_sk_spectrum.csv", df_wb)
+CSV.write("data/H_qu_spectrum.csv", df_wb)
