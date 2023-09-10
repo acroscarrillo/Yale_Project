@@ -126,7 +126,7 @@ function f!(du,u, p, t)
 end
 
 """
-    needs documentation!!!
+    Return the quasienergies. Needs better documentation!!!
 """
 function quasienergies(N, ω_0, g_n, Ω_d, ω_d)
     p =  H_0(N,ω_0,g_n), H_d(N,Ω_d), ω_d, ComplexF64.(zeros(N,N))
@@ -142,7 +142,7 @@ function quasienergies(N, ω_0, g_n, Ω_d, ω_d)
 end
 
 """
-    needs documentation!!!
+    Return the quasienergies and quasimodes. Needs better documentation!!!
 """
 function qen_qmodes(N, ω_0, g_n, Ω_d, ω_d)
     p =  H_0(N,ω_0,g_n), H_d(N,Ω_d), ω_d, ComplexF64.(zeros(N,N))
