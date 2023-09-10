@@ -100,10 +100,15 @@ function H_d(N,Ω_d)
 end
 
 
-"""
+@doc raw"""
     f(u, p, t)
 
-.
+Function used to initiate the `ODEProblem` from `DifferentialEquations.jl` that defines the propagator ODE problem
+
+``
+\frac{d}{dt} U(t) = -i H(t) U(t),
+``
+where ``f \doteq  -i H(t) U(t)``. This will later be passed to the `solver` from `DifferentialEquations.jl` to obtain ``U(t)`` in functions `quasienergies` and `qen_qmodes` to get the Floquet quasienergies and quasimodes.
 
 # Examples
 ```julia-repl
@@ -115,7 +120,6 @@ julia> H_d(3,1)
 
 ```
 """
-# this is f = -iHU, for the ODE solver dU/dt = f
 function f(u, p, t)
     # H, H_0, H_d, ω_d = p[1], p[2], p[3], p[4] 
     H = p[1] + p[2]*cos(p[3]*t)
