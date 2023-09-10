@@ -127,7 +127,7 @@ end
 
 """
     quasienergies(N, ω_0, g_n, Ω_d, ω_d)
-    
+
 Return the quasienergies. Needs better documentation!!!
 """
 function quasienergies(N, ω_0, g_n, Ω_d, ω_d)

@@ -42,13 +42,8 @@ for (_, Ω_d) in ProgressBar(enumerate(Ω_d_array))
         data_array[counter,:] .= mod(ϵ_n[n] - ϵ_0, ω_d/2), Ω_d, K, ϵ_2, ϵ_2/K, N
         counter += 1
     end
-
-    # print("*")
-    # print(argmax(overlaps))
-    # print(", ")
-    # print(round(ϵ_2,digits=2))
 end
 
-# Put data in convenient DataFrame object
+# Put data in convenient DataFrame object and save it
 df_floquet = DataFrame(data_array, ["Δϵ_n","Ω_d","K","ϵ_2","ϵ_2/K","N"]) 
 CSV.write("data/floquet_kissing.csv", df_floquet)
