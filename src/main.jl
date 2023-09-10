@@ -1,3 +1,28 @@
+using LinearAlgebra # to diagonalise stuff
+using DifferentialEquations
+
+
+"""
+    a(N::Int)
+
+Return the bosonic annahilation operator truncated at dimension `N`.
+For the corresponding bosonic creation operator simply make use of the native adjoint operator `a(N)'`.
+
+# Examples
+```julia-repl
+julia> a(3)
+3×3 Matrix{Float64}:
+ 0.0  1.0  0.0
+ 0.0  0.0  1.41421
+ 0.0  0.0  0.0
+
+julia> a(3)'
+3×3 adjoint(::Matrix{Float64}) with eltype Float64:
+ 0.0  0.0      0.0
+ 1.0  0.0      0.0
+ 0.0  1.41421  0.0
+```
+"""
 function a(N::Int)
     a = zeros(Float64, (N, N))
     for n in 1:N-1
@@ -6,3 +31,125 @@ function a(N::Int)
     return a
 end
 
+
+"""
+    H(N,ω_0,g_n,Ω_d,ω_d,t)
+
+Return the experimental Kerr cat Hamiltonian as given in, for instance, in Eq. (1) of https://arxiv.org/pdf/2209.03934.pdf. Non-liniarities `g_n` should be passed as vector whose componets are assigned as `g_3 = g_n[1]`, `g_4 = g_n[2]`, etc. 
+
+# Examples
+```julia-repl
+julia> H(3,1,[1,1],1,2,1)
+3×3 Matrix{ComplexF64}:
+     3.0+0.0im           3.0+0.416147im  4.24264+0.0im
+     3.0-0.416147im     10.0+0.0im       4.24264+0.588521im
+ 4.24264+0.0im       4.24264-0.588521im      8.0+0.0im
+
+```
+"""
+function H(N,ω_0,g_n,Ω_d,ω_d,t)
+    A = a(N) # annahilation op. up to dim N
+    exp_order = length(g_n)
+    expansion = [(A' + A)^n for n=3:(2+exp_order)]
+    return  ω_0*A'*A + g_n'*expansion - im*Ω_d*cos(ω_d*t)*(A - A')
+end
+
+
+"""
+    H_0(N,ω_0,g_n)
+
+Return the time-independent part of the experimental Kerr cat Hamiltonian as given in, for instance, Eq. (1) of https://arxiv.org/pdf/2209.03934.pdf. Non-liniarities `g_n` should be passed as vector whose componets are assigned as `g_3 = g_n[1]`, `g_4 = g_n[2]`, etc. This function is equivalent to `H(N,ω_0,g_n,0,0,0)`. Note the full Hamiltonian would be `H = H_0 + H_d*cos(ω_d*t)`.
+
+# Examples
+```julia-repl
+julia> H_0(3,1,[1,1])
+3×3 Matrix{Float64}:
+ 0.75     1.0      1.06066
+ 1.0      3.25     1.41421
+ 1.06066  1.41421  3.5
+
+```
+"""
+function H_0(N,ω_0,g_n)
+    A = a(N) # annahilation op. up to dim N
+    exp_order = length(g_n)
+    expansion = [(A' + A)^n / n for n=3:(2+exp_order)]
+    return  ω_0*A'*A + g_n'*expansion
+end
+
+
+
+"""
+    H_d(N,Ω_d)
+
+Return the operator component of the time-dependent part of the experimental Kerr cat Hamiltonian as given in, for instance, Eq. (1) of https://arxiv.org/pdf/2209.03934.pdf. Note this term does NOT depend on time, the full Hamiltonian would be `H = H_0 + H_d*cos(ω_d*t)`.
+
+# Examples
+```julia-repl
+julia> H_d(3,1)
+3×3 Matrix{ComplexF64}:
+  0.0-0.0im   0.0-1.0im      0.0-0.0im
+ -0.0+1.0im   0.0-0.0im      0.0-1.41421im
+  0.0-0.0im  -0.0+1.41421im  0.0-0.0im
+
+```
+"""
+function H_d(N,Ω_d)
+    A = a(N) # annahilation op. up to dim N
+    return  - im*Ω_d*(A - A')
+end
+
+
+"""
+    f(u, p, t)
+
+.
+
+# Examples
+```julia-repl
+julia> H_d(3,1)
+3×3 Matrix{ComplexF64}:
+  0.0-0.0im   0.0-1.0im      0.0-0.0im
+ -0.0+1.0im   0.0-0.0im      0.0-1.41421im
+  0.0-0.0im  -0.0+1.41421im  0.0-0.0im
+
+```
+"""
+# this is f = -iHU, for the ODE solver dU/dt = f
+function f(u, p, t)
+    # H, H_0, H_d, ω_d = p[1], p[2], p[3], p[4] 
+    H = p[1] + p[2]*cos(p[3]*t)
+    return -im * H * u
+end
+
+# this the in-place f = -iHU, for the ODE solver dU/dt = f
+function f!(du,u, p, t)
+    p[4] .= (-im) .* (p[1] .+ p[2] .* cos(p[3]*t))
+    mul!(du, p[4], u) 
+end
+
+function quasienergies(N, ω_0, g_n, Ω_d, ω_d)
+    p =  H_0(N,ω_0,g_n), H_d(N,Ω_d), ω_d, ComplexF64.(zeros(N,N))
+    T = 2*pi/ω_d
+    tspan = (0.0, 2*T) # because rodrigo said so (need to understand this)
+    u_0 = ComplexF64.(Matrix(I(N)))
+    prob = ODEProblem(f!, u_0, tspan, p)
+    sol = solve(prob) #, reltol = 1e-8, abstol = 1e-8)
+    U_2T = sol.u[end]
+    η_n, _ = eigen(U_2T)
+    ϵ_n = im*log.(η_n)/T
+    return mod.(real.(ϵ_n), ω_d/2)  # as they are mod(ω_d/2)
+end
+
+function qen_qmodes(N, ω_0, g_n, Ω_d, ω_d)
+    p =  H_0(N,ω_0,g_n), H_d(N,Ω_d), ω_d, ComplexF64.(zeros(N,N))
+    T = 2*pi/ω_d
+    tspan = (0.0, 2*T) # because rodrigo said so (need to understand this)
+    u_0 = ComplexF64.(Matrix(I(N)))
+    prob = ODEProblem(f!, u_0, tspan, p)
+    sol = solve(prob) #, reltol = 1e-8, abstol = 1e-8)
+    U_2T = sol.u[end]
+    η_n, ϕ_n = eigen(U_2T)
+    ϵ_n = im*log.(η_n)/T
+    return mod.(real.(ϵ_n), ω_d/2), ϕ_n  # as they are mod(ω_d/2)
+end
