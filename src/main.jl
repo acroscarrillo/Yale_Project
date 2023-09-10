@@ -100,20 +100,18 @@ function H_d(N,Ω_d)
 end
 
 
-@doc raw"""
+"""
     f!(u, p, t)
 
 In-place function used to initiate the function `ODEProblem` from `DifferentialEquations.jl` that defines the propagator ODE problem
 
-``
-\frac{d}{dt} U(t) = -i H(t) U(t),
-``
+`d/dt U(t) = -i H(t) U(t),`
 
-where ``f! \doteq  -i H(t) U(t)``. This will be passed to the function `solver` from `DifferentialEquations.jl` to obtain ``U(t)`` in functions like `quasienergies` and `qen_qmodes` to get the Floquet quasienergies and quasimodes. Please consult `DifferentialEquations.jl` documentation, in particular https://docs.sciml.ai/DiffEqDocs/stable/types/ode_types/#SciMLBase.ODEFunction. 
+where `f! =  -i H(t) U(t)`. This will be passed to the function `solver` from `DifferentialEquations.jl` to obtain `U(t)` in functions like `quasienergies` and `qen_qmodes` to get the Floquet quasienergies and quasimodes. Please consult `DifferentialEquations.jl` documentation, in particular https://docs.sciml.ai/DiffEqDocs/stable/types/ode_types/#SciMLBase.ODEFunction. 
 
 ...
 # Arguments
-- `du`: derivative of propagator, i.e. ``-i H(t) U(t)``.
+- `du`: derivative of propagator, i.e. `-i H(t) U(t)`.
 - `u`: propagator.
 - `p`: parameters. p =  H_0, H_d, ω_d, du
 - `t`: time.
@@ -127,6 +125,9 @@ function f!(du,u, p, t)
     mul!(du, p[4], u) 
 end
 
+"""
+    needs documentation!!!
+"""
 function quasienergies(N, ω_0, g_n, Ω_d, ω_d)
     p =  H_0(N,ω_0,g_n), H_d(N,Ω_d), ω_d, ComplexF64.(zeros(N,N))
     T = 2*pi/ω_d
@@ -140,6 +141,9 @@ function quasienergies(N, ω_0, g_n, Ω_d, ω_d)
     return mod.(real.(ϵ_n), ω_d/2)  # as they are mod(ω_d/2)
 end
 
+"""
+    needs documentation!!!
+"""
 function qen_qmodes(N, ω_0, g_n, Ω_d, ω_d)
     p =  H_0(N,ω_0,g_n), H_d(N,Ω_d), ω_d, ComplexF64.(zeros(N,N))
     T = 2*pi/ω_d
