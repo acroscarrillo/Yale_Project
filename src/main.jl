@@ -101,32 +101,27 @@ end
 
 
 @doc raw"""
-    f(u, p, t)
+    f!(u, p, t)
 
-Function used to initiate the `ODEProblem` from `DifferentialEquations.jl` that defines the propagator ODE problem
+In-place function used to initiate the function `ODEProblem` from `DifferentialEquations.jl` that defines the propagator ODE problem
 
 ``
 \frac{d}{dt} U(t) = -i H(t) U(t),
 ``
-where ``f \doteq  -i H(t) U(t)``. This will later be passed to the `solver` from `DifferentialEquations.jl` to obtain ``U(t)`` in functions `quasienergies` and `qen_qmodes` to get the Floquet quasienergies and quasimodes.
 
-# Examples
-```julia-repl
-julia> H_d(3,1)
-3×3 Matrix{ComplexF64}:
-  0.0-0.0im   0.0-1.0im      0.0-0.0im
- -0.0+1.0im   0.0-0.0im      0.0-1.41421im
-  0.0-0.0im  -0.0+1.41421im  0.0-0.0im
+where ``f! \doteq  -i H(t) U(t)``. This will be passed to the function `solver` from `DifferentialEquations.jl` to obtain ``U(t)`` in functions like `quasienergies` and `qen_qmodes` to get the Floquet quasienergies and quasimodes. Please consult `DifferentialEquations.jl` documentation, in particular https://docs.sciml.ai/DiffEqDocs/stable/types/ode_types/#SciMLBase.ODEFunction. 
 
-```
+...
+# Arguments
+- `du`: derivative of propagator, i.e. ``-i H(t) U(t)``.
+- `u`: propagator.
+- `p`: parameters. p =  H_0, H_d, ω_d, du
+- `t`: time.
+...
+
+# Performance
+Several performance comments are in order. Function `f!` is called many many times by the solver which means that the faster `f!` runs the faster the solver will be. This is why `H_0`, `H_d`, `ω_d` are passed as parameters so not to re-compute them again uncessarily.  Finally, to avoid uncessary memory re-allocations, we also pass `du` as a parameter forcing the solver store `du` in the same memory space which is much more efficient (this is achieved with the broadcasting assigment).
 """
-function f(u, p, t)
-    # H, H_0, H_d, ω_d = p[1], p[2], p[3], p[4] 
-    H = p[1] + p[2]*cos(p[3]*t)
-    return -im * H * u
-end
-
-# this the in-place f = -iHU, for the ODE solver dU/dt = f
 function f!(du,u, p, t)
     p[4] .= (-im) .* (p[1] .+ p[2] .* cos(p[3]*t))
     mul!(du, p[4], u) 
