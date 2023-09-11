@@ -9,8 +9,7 @@ N = 100 #from the calculations in the eff model, N>=25 is sufficient
 # g_n = [2*10^(-5),8*10^(-6)]
 g_n = [0.00075,1.27*10^(-7)]
 # g_n = [1,1]
-ω_d = 2*ω_0 #ignoring all the other terms
-# ω_d = ω_0 #ignoring all the other terms
+# ω_d = 2*ω_0
 
 
 K = (10*g_n[1]^2)/(3*ω_0) - 3*g_n[2]/2
@@ -27,11 +26,12 @@ V_0 = V_n[:, 1]
 
 counter = 1
 for (_, Ω_d) in ProgressBar(enumerate(Ω_d_array))
+    ω_d = 2*( ω_0 + 3*g_n[2] -20*g_n[1]^2/(3*ω_0) + (6*g_n[2]+9*g_n[1]^2/ω_0)*(2*Ω_d/(3*ω_0))^2)
     ϵ_n, ϕ_n = qen_qmodes(N, ω_0, g_n, Ω_d, ω_d)
 
     overlaps = zeros(N)
     for n=1:N
-        overlaps[n] = real((V_0'*ϕ_n[:,n])*(ϕ_n[:,n]'*V_0))
+        overlaps[n] = real( (V_0'*ϕ_n[:,n])*(ϕ_n[:,n]'*V_0) )
     end
 
     ϵ_0 = ϵ_n[argmax(overlaps)]
