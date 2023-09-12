@@ -99,6 +99,25 @@ function H_d(N,Ω_d)
     return  - im*Ω_d*(A - A')
 end
 
+"""
+    H_eff(N,Δ,K,ϵ_1,ϵ_2)
+
+Return the effective Hamiltonian of the experimental Kerr cat Hamiltonian as explained in, for instance, Eq. (8) of https://arxiv.org/pdf/2210.07255.pdf, where however, a self-energy and a secondary driving term are missing (perhaps there's a better ref of this?).
+
+# Examples
+```julia-repl
+julia> H_eff(3,1,2,3,4)
+3×3 Matrix{Float64}:
+ -4.0      3.0      5.65685
+  3.0      1.0      4.24264
+  5.65685  4.24264  2.0
+
+```
+"""
+function H_eff(N,Δ,K,ϵ_1,ϵ_2)
+    A = a(N) # annahilation op. up to dim N
+    return Δ*A'*A - K*(A'^2)*(A^2) + ϵ_1*(A + A') + ϵ_2*(A^2 + A'^2)
+end
 
 """
     f!(u, p, t)
