@@ -73,36 +73,42 @@ julia> H_0(3,1,[1,1])
 function H_0(N,ω_0,g_n)
     A = a(N) # annahilation op. up to dim N
     exp_order = length(g_n)
-    expansion = [(A' + A)^n / n for n=3:(2+exp_order)]
+    expansion = [(A' + A)^n for n=3:(2+exp_order)]
     return  ω_0*A'*A + g_n'*expansion
 end
 
 
 
 """
-    H_d(N,Ω_d)
+    H_d(N)
 
-Return the operator component of the time-dependent part of the experimental Kerr cat Hamiltonian as given in, for instance, Eq. (1) of https://arxiv.org/pdf/2209.03934.pdf. Note this term does NOT depend on time, the full Hamiltonian would be `H = H_0 + H_d*cos(ω_d*t)`.
+Return the operator component of the time-dependent part of the experimental Kerr cat Hamiltonian as given in, for instance, Eq. (1) of https://arxiv.org/pdf/2209.03934.pdf. This is 
+
+`- 2*im*(a - a')`
+
+Note this term does NOT depend on time, the full Hamiltonian would be `H = H_0 + H_d*Ω_d*cos(ω_d*t)` if it only has one drive.
 
 # Examples
 ```julia-repl
-julia> H_d(3,1)
+julia> H_d(3)
 3×3 Matrix{ComplexF64}:
-  0.0-0.0im   0.0-1.0im      0.0-0.0im
- -0.0+1.0im   0.0-0.0im      0.0-1.41421im
-  0.0-0.0im  -0.0+1.41421im  0.0-0.0im
+  0.0-0.0im   0.0-2.0im      0.0-0.0im
+ -0.0+2.0im   0.0-0.0im      0.0-2.82843im
+  0.0-0.0im  -0.0+2.82843im  0.0-0.0im
 
 ```
 """
-function H_d(N,Ω_d)
+function H_d(N)
     A = a(N) # annahilation op. up to dim N
-    return  - im*Ω_d*(A - A')
+    return  - 2*im*(A - A')
 end
 
 """
     H_eff(N,Δ,K,ϵ_1,ϵ_2)
 
-Return the effective Hamiltonian of the experimental Kerr cat Hamiltonian as explained in, for instance, Eq. (8) of https://arxiv.org/pdf/2210.07255.pdf, where however, a self-energy and a secondary driving term are missing (perhaps there's a better ref of this?).
+Return the effective Hamiltonian of the experimental Kerr cat Hamiltonian as explained in, for instance, Eq. (8) of https://arxiv.org/pdf/2210.07255.pdf, where however, a self-energy and a secondary driving term are missing (perhaps there's a better ref of this?).This is 
+
+`Δ*a'*a - K*(a'^2)*(a^2) + ϵ_1*(a + a') + ϵ_2*(a^2 + a'^2)`
 
 # Examples
 ```julia-repl
@@ -126,56 +132,65 @@ In-place function used to initiate the function `ODEProblem` from `DifferentialE
 
 `d/dt U(t) = -i H(t) U(t),`
 
-where `f! =  -i H(t) U(t)`. This will be passed to the function `solver` from `DifferentialEquations.jl` to obtain `U(t)` in functions like `quasienergies` and `qen_qmodes` to get the Floquet quasienergies and quasimodes. Please consult `DifferentialEquations.jl` documentation, in particular https://docs.sciml.ai/DiffEqDocs/stable/types/ode_types/#SciMLBase.ODEFunction. 
+where `f! =  -i H(t) U(t)`. This will be passed to the function `solver` from `DifferentialEquations.jl` to obtain `U(t)` in functions like `quasienergies` and `qen_qmodes` to get the Floquet quasienergies and quasimodes. Please consult `DifferentialEquations.jl` documentation, in particular https://docs.sciml.ai/DiffEqDocs/stable/types/ode_types/#SciMLBase.ODEFunction. In our present case we have 
+
+`-i*H(t) = -i*( H_0 + H_d*( Ω_1*cos(ω_1*t) + Ω_2*cos(ω_2*t) ) )`
 
 ...
 # Arguments
 - `du`: derivative of propagator, i.e. `-i H(t) U(t)`.
 - `u`: propagator.
-- `p`: parameters. p =  H_0, H_d, ω_d, du
+- `p`: parameters. p =  H_0, H_d, Ω_1, ω_1, Ω_2, ω_2, du
 - `t`: time.
 ...
 
 # Performance
-Several performance comments are in order. Function `f!` is called many many times by the solver which means that the faster `f!` runs the faster the solver will be. This is why `H_0`, `H_d`, `ω_d` are passed as parameters so not to re-compute them again uncessarily.  Finally, to avoid uncessary memory re-allocations, we also pass `du` as a parameter forcing the solver store `du` in the same memory space which is much more efficient (this is achieved with the broadcasting assigment).
+Several performance comments are in order. Function `f!` is called many many times by the solver which means that the faster `f!` runs the faster the solver will be. This is why `H_0`, `H_d`, `ω_1`,... etc. are passed as parameters so not to re-compute them again uncessarily.  Finally, to avoid uncessary memory re-allocations, we also pass `du` as a parameter forcing the solver store `du` in the same memory space which is much more efficient (this is achieved with the broadcasting assigment). Another comment is in order: there doesnt seem to be any performance benefit (nor in time nor in memory allocations) between creating two functions, say `f1!` and `f2!`, where `f1!` is speciallised to one single drive and `f2!` with two drives. This is probably because the operator `H_d` is shared as in the time dependent part is `~ H_d*(Ω_1*cos(ω_1) + Ω_2*cos(ω_2))`. So the only extra added complexity lies in computing two cosines and adding two numbers which is neglegible. 
 """
 function f!(du,u, p, t)
-    p[4] .= (-im) .* (p[1] .+ p[2] .* cos(p[3]*t))
-    mul!(du, p[4], u) 
+    # -i*H(t) = -i*( H_0 + H_d*( Ω_1*cos(ω_1*t) + Ω_2*cos(ω_2*t) ) )
+    p[7] .= (-im) .* (p[1] .+ p[2] .* (p[3] .* cos(p[4]*t) .+ p[5] .* cos(p[6]*t)) )
+    mul!(du, p[7], u) 
 end
 
 """
     quasienergies(N, ω_0, g_n, Ω_d, ω_d)
 
-Return the quasienergies. Needs better documentation!!!
+Return the Floquet quasienergies of H(N,ω_0,g_n,Ω_d,ω_d,t). Needs better documentation...
+
+# Warning!!
+The period of the system is hard coded to be `2*pi/ω_2`, but this is not true in general! This is so because in the experiment, ω_0 ≈ ω_1 ≈ ω_2/2, so ω_2 will have the largest period (these guys are commensurable).
 """
-function quasienergies(N, ω_0, g_n, Ω_d, ω_d)
-    p =  H_0(N,ω_0,g_n), H_d(N,Ω_d), ω_d, ComplexF64.(zeros(N,N))
-    T = 2*pi/ω_d
+function quasienergies(N, ω_0, g_n, Ω_1, ω_1, Ω_2, ω_2)
+    p =  H_0(N,ω_0,g_n), H_d(N), Ω_1, ω_1, Ω_2, ω_2, ComplexF64.(zeros(N,N))
+    T = 2*pi/ω_2 #THIS IS NOT GENERAL, see documentation above.
     tspan = (0.0, 2*T) # because rodrigo said so (need to understand this)
     u_0 = ComplexF64.(Matrix(I(N)))
     prob = ODEProblem(f!, u_0, tspan, p)
-    sol = solve(prob) #, reltol = 1e-8, abstol = 1e-8)
+    sol = solve(prob) 
     U_2T = sol.u[end]
     η_n, _ = eigen(U_2T)
     ϵ_n = im*log.(η_n)/T
-    return mod.(real.(ϵ_n), ω_d/2)  # as they are mod(ω_d/2)
+    return mod.(real.(ϵ_n), ω_2/2)  # as they are mod(ω_d/2), cause we take T to be 2T.
 end
 
 """
-    qen_qmodes(N, ω_0, g_n, Ω_d, ω_d)
+    qen_qmodes(N, ω_0, g_n, Ω_1, ω_1, Ω_2, ω_2)
 
-Return the quasienergies and quasimodes. Needs better documentation!!!
+Return the Floquet quasienergies and quasimodes of H(N,ω_0,g_n,Ω_d,ω_d,t).Needs better documentation...
+
+# Warning!!
+The period of the system is hard coded to be `2*pi/ω_2`, but this is not true in general! This is so because in the experiment, ω_0 ≈ ω_1 ≈ ω_2/2, so ω_2 will have the largest period (these guys are commensurable).
 """
-function qen_qmodes(N, ω_0, g_n, Ω_d, ω_d)
-    p =  H_0(N,ω_0,g_n), H_d(N,Ω_d), ω_d, ComplexF64.(zeros(N,N))
-    T = 2*pi/ω_d
+function qen_qmodes(N, ω_0, g_n, Ω_1, ω_1, Ω_2, ω_2)
+    p =  H_0(N,ω_0,g_n), H_d(N), Ω_1, ω_1, Ω_2, ω_2, ComplexF64.(zeros(N,N))
+    T = 2*pi/ω_2 #THIS IS NOT GENERAL, see documentation above.
     tspan = (0.0, 2*T) # because rodrigo said so (need to understand this)
     u_0 = ComplexF64.(Matrix(I(N)))
     prob = ODEProblem(f!, u_0, tspan, p)
-    sol = solve(prob) #, reltol = 1e-8, abstol = 1e-8)
+    sol = solve(prob) 
     U_2T = sol.u[end]
     η_n, ϕ_n = eigen(U_2T)
     ϵ_n = im*log.(η_n)/T
-    return mod.(real.(ϵ_n), ω_d/2), ϕ_n  # as they are mod(ω_d/2)
+    return mod.(real.(ϵ_n), ω_2/2), ϕ_n  # as they are mod(ω_d/2)
 end
