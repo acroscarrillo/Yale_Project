@@ -41,17 +41,17 @@ Return the experimental Kerr cat Hamiltonian as given in, for instance, in Eq. (
 ```julia-repl
 julia> H(3,1,[1,1],1,2,1)
 3×3 Matrix{ComplexF64}:
-     3.0+0.0im           3.0+0.416147im  4.24264+0.0im
-     3.0-0.416147im     10.0+0.0im       4.24264+0.588521im
- 4.24264+0.0im       4.24264-0.588521im      8.0+0.0im
+    0.75+0.0im           1.0+0.832294im  1.06066+0.0im
+     1.0-0.832294im     3.25+0.0im       1.41421+1.17704im
+ 1.06066+0.0im       1.41421-1.17704im       3.5+0.0im
 
 ```
 """
 function H(N,ω_0,g_n,Ω_d,ω_d,t)
     A = a(N) # annahilation op. up to dim N
     exp_order = length(g_n)
-    expansion = [(A' + A)^n for n=3:(2+exp_order)]
-    return  ω_0*A'*A + g_n'*expansion - im*Ω_d*cos(ω_d*t)*(A - A')
+    expansion = [(A' + A)^n/n for n=3:(2+exp_order)]
+    return  ω_0*A'*A + g_n'*expansion - 1*im*Ω_d*cos(ω_d*t)*(A - A')
 end
 
 
@@ -73,7 +73,7 @@ julia> H_0(3,1,[1,1])
 function H_0(N,ω_0,g_n)
     A = a(N) # annahilation op. up to dim N
     exp_order = length(g_n)
-    expansion = [(A' + A)^n for n=3:(2+exp_order)]
+    expansion = [(A' + A)^n/n for n=3:(2+exp_order)]
     return  ω_0*A'*A + g_n'*expansion
 end
 
@@ -100,7 +100,7 @@ julia> H_d(3)
 """
 function H_d(N)
     A = a(N) # annahilation op. up to dim N
-    return  - 2*im*(A - A')
+    return  - 1*im*(A - A')
 end
 
 """
@@ -114,9 +114,9 @@ Return the effective Hamiltonian of the experimental Kerr cat Hamiltonian as exp
 ```julia-repl
 julia> H_eff(3,1,2,3,4)
 3×3 Matrix{Float64}:
- -4.0      3.0      5.65685
-  3.0      1.0      4.24264
-  5.65685  4.24264  2.0
+ 0.0      3.0       5.65685
+ 3.0      1.0       4.24264
+ 5.65685  4.24264  -2.0
 
 ```
 """
@@ -134,8 +134,9 @@ In-place function used to initiate the function `ODEProblem` from `DifferentialE
 
 where `f! =  -i H(t) U(t)`. This will be passed to the function `solver` from `DifferentialEquations.jl` to obtain `U(t)` in functions like `quasienergies` and `qen_qmodes` to get the Floquet quasienergies and quasimodes. Please consult `DifferentialEquations.jl` documentation, in particular https://docs.sciml.ai/DiffEqDocs/stable/types/ode_types/#SciMLBase.ODEFunction. In our present case we have 
 
-`-i*H(t) = -i*( H_0 + H_d*( Ω_1*cos(ω_1*t) + Ω_2*cos(ω_2*t) ) )`
+`-i*H(t) = +i*( H_0 + H_d*( Ω_1*cos(ω_1*t) + Ω_2*cos(ω_2*t) ) )`
 
+the plus sign on the right hand side is because H in all the papers are defined with the opposite sign they actually meant (think about it, it has to be a double-well).
 ...
 # Arguments
 - `du`: derivative of propagator, i.e. `-i H(t) U(t)`.
@@ -149,7 +150,7 @@ Several performance comments are in order. Function `f!` is called many many tim
 """
 function f!(du,u, p, t)
     # -i*H(t) = -i*( H_0 + H_d*( Ω_1*cos(ω_1*t) + Ω_2*cos(ω_2*t) ) )
-    p[7] .= (-im) .* (p[1] .+ p[2] .* (p[3] .* cos(p[4]*t) .+ p[5] .* cos(p[6]*t)) )
+    p[7] .= (+im) .* (p[1] .+ p[2] .* (p[3] .* cos(p[4]*t) .+ p[5] .* cos(p[6]*t)) )
     mul!(du, p[7], u) 
 end
 
