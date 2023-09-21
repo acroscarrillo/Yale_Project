@@ -3,7 +3,7 @@ using LaTeXStrings # latex support for sexy figs
 
 df = DataFrame(CSV.File("data/h_eff_exact_resonances.csv"))
 
-ttl = "Resonances at "*L"N="*string(N)*L",\Delta="*string(Δ)*L",K="*string(K)*",tol="*string(cross_tol)
+ttl = L"H_{eff}"*" resonances at "*L"N="*string(N)*", "*L"\Delta="*string(Δ)*", "*L"K="*string(K)*".\n Cut-off at cross_tol="*string(cross_tol)*". All levels considered."
 xlb = L"\epsilon_1"
 ylb = L"\epsilon_2"
 

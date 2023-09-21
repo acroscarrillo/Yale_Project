@@ -38,10 +38,10 @@ data_array = zeros( n_cross*length(Ω_1_array)*length(Ω_2_array), 12 ) # data f
 E_n , V_n = eigen(H_0(N,ω_0,g_n))
 V_0 = V_n[:, 1]
 
-H_temp = Hermitian( H(N,ω_0,g_n,0,0,0) )
-lamb, _ = eigen(H_temp)
-ω_a = lamb[2] - lamb[1]
-ω_2 = 2*ω_a
+# H_temp = Hermitian( H(N,ω_0,g_n,0,0,0) )
+# lamb, _ = eigen(H_temp)
+# ω_a = lamb[2] - lamb[1]
+# ω_2 = 2*ω_a
 
 matrix_color = zeros(length(Ω_1_array),length(Ω_2_array))
 
@@ -56,11 +56,9 @@ for (i,_) in enumerate(Ω_1_array)
             Ω_1, Ω_2 = Ω_1_array[i], Ω_2_array[length(Ω_2_array)-j+1]
         end
 
-        ω_a = ω_0 + 3*g_n[2] - 20*g_n[1]^2/(3*ω_0) + (6*g_n[2]+9*g_n[1]^2/ω_0)*(2*Ω_2/(3*ω_0))^2 
-        ω_2 = 2*ω_a
+        ω_2 = 2*ω_a(ω_0,g_n,Ω_2)
     
-        Π = 2*(Ω_2*ω_2)/(ω_2^2-ω_0^2)
-        ϵ_2 = g_n[1]*Π
+        ϵ_2 = g_n[1]*Π(Ω_2,ω_2)
         ϵ_1 = 2*Ω_1
         
         ϵ_n, ϕ_n = qen_qmodes(N, ω_0, g_n, Ω_1, ω_1, Ω_2, ω_2)

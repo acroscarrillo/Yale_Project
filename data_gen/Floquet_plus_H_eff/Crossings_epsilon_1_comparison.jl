@@ -14,8 +14,8 @@ N = 20
 # Define parameter space
 Δ = 0
 K = 1
-ϵ_1_array = Vector(0:0.05:30).*K
-ϵ_2 = 20*K
+ϵ_1_array = Vector( range(0, 30, length=600) ).*K
+ϵ_2 = 6*K
 
 # Define crossing data form
 h_eff_array = zeros(N*length(ϵ_1_array), 4 ) # data form: ΔE_n | ϵ_2 | ϵ_1 | floquet?
@@ -36,19 +36,25 @@ end
 ###########
 # Floquet #
 ###########
+# Define parameter space
 ω_0 = 1
 ω_1 = 1
 g_n = [0.00075, 1.27*10^(-7)].*ω_0
 K = (10*g_n[1]^2)/(3*ω_0) - 3*g_n[2]/2
 Ω_1_array = Vector( range(0, (1*K)*(ϵ_1_array[end])/2, length=100) )
-Ω_2_array = Vector( range(0, 3*ϵ_2*(1*K)/(4*g_n[1]), length=100) )
+Ω_2_array = Vector( range(0, 3*ϵ_2*ω_0*(1*K)/(4*g_n[1]), length=100) )
+#####################
+# Ω_2_array = [0]     # WATCH THIS!!!!!!!!!!!!!!!
+#####################
 
+# Sanity checks
 Ω_1_max = Ω_1_array[end]
 Ω_2_max = Ω_2_array[end]
 
-ϵ_1_max = 2*Ω_1_max/K # check: in K units like in H_eff above (replace 2K -> K)
-ϵ_2_max = Ω_2_max*4*g_n[1]/(3*ω_0*K) # check: in K units like in H_eff above (replace 2K -> K)
+ϵ_1_max = 2*Ω_1_max/K # check: in K units like in H_eff above (replace (2*K) -> K)
+ϵ_2_max = Ω_2_max*4*g_n[1]/(3*ω_0*K) # check: in K units like in H_eff above (replace (2*K) -> K)
 
+# define data array to store Floquet data
 floquet_array = zeros(N*length(Ω_1_array), 4 )  # data form: ΔE_n | ϵ_2 | ϵ_1 | floquet?
 
 # Generate data within parameter space
@@ -57,18 +63,23 @@ V_0 = V_n[:, 1]
 
 pbar = ProgressBar(total=length(Ω_1_array)*length(Ω_2_array))
 counter = 1
-for Ω_2 in Ω_2_array
-    for Ω_1 in Ω_1_array
-        ω_a = ω_0 + 3*g_n[2] - 20*g_n[1]^2/(3*ω_0) + (6*g_n[2]+9*g_n[1]^2/ω_0)*(2*Ω_2/(3*ω_0))^2 
-        ω_2 = 2*ω_a
-    
-        # Π = 2*(Ω_2*ω_2)/(ω_2^2-ω_0^2)
-        # ϵ_2 = g_n[1]*Π
-        ϵ_2 = 4*g_n[1]*Ω_2/(3*ω_0)
+Ω_1, Ω_2 = 0, 0
+for (i,_) in enumerate(Ω_2_array)
+    for (j,_) in enumerate(Ω_1_array)
+        # otherwise for loop is not adiabatic (makes jumps in Ω_1, Ω_2), this is like a snake in the Ω_1-Ω_2 plane. Failing to do this is an error.
+        if isodd(i)
+            Ω_2, Ω_1 = Ω_2_array[i], Ω_1_array[j]
+        else
+            Ω_2, Ω_1 = Ω_2_array[i], Ω_1_array[length(Ω_1_array)-j+1]
+        end
+
+        ω_2 = 2*ω_a(ω_0,g_n,Ω_2)
+        ϵ_2 = g_n[1]*Π(Ω_2,ω_2)
         ϵ_1 = 2*Ω_1
 
         ϵ_n, ϕ_n = qen_qmodes(N, ω_0, g_n, Ω_1, ω_1, Ω_2, ω_2)
 
+        # adiabatic tracking of the ground state
         overlaps = zeros(N)
         for n=1:N
             overlaps[n] = real( (V_0'*ϕ_n[:,n])*(ϕ_n[:,n]'*V_0) )
@@ -76,11 +87,11 @@ for Ω_2 in Ω_2_array
 
         ϵ_0 = ϵ_n[argmax(overlaps)]
         V_0 = ϕ_n[:,argmax(overlaps)]
-
         ϵ_n = sort(mod.(ϵ_n .- ϵ_0, ω_2/2))
+        # store data only when Ω_2 of interest is reached
         if Ω_2 == Ω_2_array[end]
-            for i=1:N
-                floquet_array[counter,:] .= ϵ_n[i]/(2*K), ϵ_2/(2*K), ϵ_1/(2*K), 1
+            for n=1:N
+                floquet_array[counter,:] .= ϵ_n[n]/(1*K), ϵ_2/(1*K), ϵ_1/(1*K), 1
                 counter += 1
             end
         end
@@ -90,8 +101,6 @@ end
 
 
 # put data in convenient DataFrame object
-# df_floquet = DataFrame(data_array, ["ϵ_n","ω_0","Ω_1","ω_1","Ω_2","ω_2","K","ϵ_2","ϵ_1","N"]) 
 df_floquet = DataFrame(vcat(floquet_array,h_eff_array), ["ΔE_n","ϵ_2","ϵ_1","floquet"]) 
-
-CSV.write("data/floquet_crossings_epsilon_1.csv", df_floquet)
+CSV.write("data/comparison_crossings_epsilon_1.csv", df_floquet)
 

@@ -57,17 +57,19 @@ for (i,_) in enumerate(Ω_1_array)
     end
 end
 
-heatmap(Ω_1_array,Ω_2_array, matrix_color_2', xlab=L"\Omega_1",ylab=L"\Omega_2",title="N=200, n_levels="*string(heat_cross))
+ttl = "Floquet reson. at "*L"N="*string(N)*", "*L"\omega_0="*string(ω_0)*", "*L"\omega_1="*string(ω_1)*", "*L"\omega_2 = 2\omega_a"*", \n"*L"K="*string(round(K,sigdigits=3))*", "*L"g_n="*g_n*". All levels. Lin-scale."
+
+heatmap(Ω_1_array,Ω_2_array, matrix_color_2', xlab=L"\Omega_1",ylab=L"\Omega_2",title=ttl,guidefontsize=14,size=(700,600))
 
 
 df_floquet = DataFrame(CSV.File("data/floquet_resonances_full_backup.csv"))
-df_Omega = filter(row -> row.Ω_2 ==  0.035298316582914574, df_floquet)  # discard large crossings
+df_Omega = filter(row -> row.Ω_2 ==  0.014474849246231157, df_floquet)  # discard large crossings
 
 df_Omega_2 = filter(row -> row.n_cross <70 && row.Δnn <= 0.00005, df_Omega)  # discard large crossings
 
-df_Omega_2 = filter(row -> row.n_cross <70 && row.ϵ_n <= 0.014  && row.ϵ_n >= 0.012, df_Omega)  # discard large crossings
+df_Omega_2 = filter(row -> row.n_cross <70 && row.ϵ_n <= 0.001, df_Omega)  # discard large crossings
 
-df_Omega_2 = filter(row -> row.n_cross <70 && row.ϵ_n <= 0.014  && row.ϵ_n >= 0.012, df_Omega)  # discard large crossings
+df_Omega_2 = filter(row -> row.n_cross <5, df_Omega)  # discard large crossings
 
 
 @df df_Omega_2 plot(:ϵ_1, :ϵ_n, group=:n_cross, markersize = 1, xlab = L"\epsilon_1",ylab = L"\epsilon_n",seriestype = :scatter,alpha=1,guidefontsize=14,markerstrokewidth=0, legend=true,legendtitle = "Levels",foreground_color_legend = nothing,background_color_legend=nothing)

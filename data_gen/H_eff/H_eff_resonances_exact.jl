@@ -5,13 +5,13 @@ using CSV
 using ProgressBars
 
 # define parameter space
-N = 30
+N = 200
 Δ = 0
 K = 1
-ϵ_1_array = Vector(0:0.01:10)
-ϵ_2_array = Vector(0:0.05:10)
+ϵ_1_array = Vector(0:0.03:10)
+ϵ_2_array = Vector(0:0.07:10)
 cross_tol = 0.5 # distance at which two levels are considered to have crossed
-n_crossings = 8
+n_crossings = 199
 
 # # Define crossing data form
 # crossing_data = zeros( length(ϵ_1_array)*length(ϵ_2_array), 6 ) # data form: min(Δnn) | Δ | K | ϵ_1 | ϵ_2 | N,  where Δnn is the difference between Nearest Neightbour levels
@@ -39,7 +39,8 @@ crossing_data = zeros( n_crossings*length(ϵ_1_array)*length(ϵ_2_array), 7 ) # 
 
 # Generate data within parameter space
 counter = 1 # Im lazy, sorry (it's just easier to read)
-for ϵ_1 in ProgressBar(ϵ_1_array)
+pbar = ProgressBar(total=length(ϵ_1_array)*length(ϵ_2_array))
+for ϵ_1 in ϵ_1_array
     for ϵ_2 in ϵ_2_array
         H_temp = Hermitian( -H_eff(N,Δ,K,ϵ_1,ϵ_2) )
         lamb, _ = eigen(H_temp)
@@ -47,6 +48,7 @@ for ϵ_1 in ProgressBar(ϵ_1_array)
             crossing_data[counter,:] .= n, lamb[1+n] - lamb[n], Δ, K, ϵ_1, ϵ_2, N
             counter += 1
         end
+        update(pbar)
     end
 end
 

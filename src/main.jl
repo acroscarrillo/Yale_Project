@@ -33,25 +33,25 @@ end
 
 
 """
-    H(N,ω_0,g_n,Ω_d,ω_d,t)
+    H(N,ω_0,g_n,Ω_1,ω_1,Ω_2,ω_2,t)
 
-Return the experimental Kerr cat Hamiltonian as given in, for instance, in Eq. (1) of https://arxiv.org/pdf/2209.03934.pdf. Non-liniarities `g_n` should be passed as vector whose componets are assigned as `g_3 = g_n[1]`, `g_4 = g_n[2]`, etc. 
+Return the experimental Kerr cat Hamiltonian as given in, for instance, in Eq. (1) of https://arxiv.org/pdf/2209.03934.pdf plus an extra drive with `ω_1`. Non-liniarities `g_n` should be passed as vector whose componets are assigned as `g_3 = g_n[1]`, `g_4 = g_n[2]`, etc. 
 
 # Examples
 ```julia-repl
-julia> H(3,1,[1,1],1,2,1)
+julia> H(3,1,[1,1],1,2,2,1,1)
 3×3 Matrix{ComplexF64}:
-    0.75+0.0im           1.0+0.832294im  1.06066+0.0im
-     1.0-0.832294im     3.25+0.0im       1.41421+1.17704im
- 1.06066+0.0im       1.41421-1.17704im       3.5+0.0im
+    0.75-0.0im           1.0-0.664458im  1.06066-0.0im
+     1.0+0.664458im     3.25-0.0im       1.41421-0.939685im
+ 1.06066-0.0im       1.41421+0.939685im      3.5-0.0im
 
 ```
 """
-function H(N,ω_0,g_n,Ω_d,ω_d,t)
+function H(N,ω_0,g_n,Ω_1,ω_1,Ω_2,ω_2,t)
     A = a(N) # annahilation op. up to dim N
     exp_order = length(g_n)
     expansion = [(A' + A)^n/n for n=3:(2+exp_order)]
-    return  ω_0*A'*A + g_n'*expansion - 1*im*Ω_d*cos(ω_d*t)*(A - A')
+    return  ω_0*A'*A + g_n'*expansion - 1*im*(Ω_1*cos(ω_1*t) + Ω_2*cos(ω_2*t))*(A - A')
 end
 
 
@@ -195,3 +195,46 @@ function qen_qmodes(N, ω_0, g_n, Ω_1, ω_1, Ω_2, ω_2)
     ϵ_n = im*log.(η_n)/T
     return mod.(real.(ϵ_n), ω_2/2), ϕ_n  # as they are mod(ω_d/2)
 end
+
+
+"""
+    ω_a(ω_0,g_n,Ω_2)
+
+Return `ω_a` as defined by 
+
+`ω_a = ω_0 + 3*g_n[2] - 20*g_n[1]^2/(3*ω_0) + (6*g_n[2]-9*g_n[1]^2/ω_0)*(2*Ω_2/(3*ω_0))^2`.
+
+# Examples
+```julia-repl
+julia> ω_a(1,[0.00075, 1.27*10^(-7)],0)
+0.999996631
+
+(For the naive theorist:) Note that ω_a is almost equal to ω_0, but this difference is very important and yields notably different physics. Another way to put this is that, unlike what we are used to, the order of magnitude of constants and so on is not 1 but rather quite small. Note the order of g_n!
+
+```
+"""
+function ω_a(ω_0,g_n,Ω_2)
+    return ω_0 + 3*g_n[2] - 20*g_n[1]^2/(3*ω_0) + (6*g_n[2]-9*g_n[1]^2/ω_0)*(2*Ω_2/(3*ω_0))^2 
+end
+
+"""
+    Π(Ω_2,ω_2)  
+
+Return `Π` as defined by 
+
+`Π = 2*Ω_2/(3*ω_2)`.
+
+# Warning
+This is a source of bugs! The literature likes to define the drive as either `-i*2*Ω_2*cos(ω_2*t)(a-a')` or `-i*Ω_2*cos(ω_2*t)(a-a')`, note the factor of 2. This amounts to `Ω_2 <-> 2*Ω_2` and of course `Π <-> 2*Π`. Just be careful... 
+
+# Examples
+```julia-repl
+julia> Π(1,1)
+0.6666666666666666
+
+```
+"""
+function Π(Ω_2,ω_2)
+    return 2*Ω_2/(3*ω_2)
+end
+
