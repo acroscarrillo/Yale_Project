@@ -13,26 +13,31 @@ N = 200
 Δ = 0
 K = 1
 ϵ_1_max = 70*K
-ϵ_2_max = 30*K
+ϵ_2_max = 32*K
 
 # Define Floquet parameter space in units of ω_0
-
 ω_0 = 1
-ω_1 = 1
-g_n = [0.00075, 1.27*10^(-7)].*ω_0
+g_n = [-0.0025, -6.667*10^(-5)].*ω_0
 K = (10*g_n[1]^2)/(3*ω_0) - 3*g_n[2]/2
 Ω_1_array = Vector( range(0, (1*K)*(ϵ_1_max)/2, length=150) )
 Ω_2_array = Vector( range(0, 3*ϵ_2_max*(1*K)/(4*g_n[1]), length=200) )
+
+Ω_1_max = Ω_1_array[end]
+Ω_2_max = Ω_2_array[end]
+
+ϵ_1_max = 2*Ω_1_max/K # check: in K units like in H_eff above (replace 2K -> K)
+ϵ_2_max = Ω_2_max*4*g_n[1]/(3*ω_0*K) 
+
 ########
 
-
+cross_cutoff = 0.005
 df_floquet = DataFrame(CSV.File("data/floquet_resonances_full_backup.csv"))
-df_formatted = filter(row -> row.Δnn <= 0.005, df_floquet)  # discard large crossings
+df_formatted = filter(row -> row.Δnn <= cross_cutoff, df_floquet)  # discard large crossings
 
-heat_cross = 200
-df = filter(row ->  row.n_cross < heat_cross, df_formatted)  # match paper limits
+n_cross_cutoff = 10
+df = filter(row ->  row.n_cross < n_cross_cutoff, df_formatted)  # discard large n's
 
-matrix_color_2 = ones(length(Ω_1_array),length(Ω_2_array))
+matrix_color_2 = zeros(length(Ω_1_array),length(Ω_2_array))
 
 pbar = ProgressBar(total=length(Ω_1_array)*length(Ω_2_array))
 Ω_11, Ω_22 = 0, 0
@@ -44,11 +49,11 @@ for (i,_) in enumerate(Ω_1_array)
             Ω_11, Ω_22 = Ω_1_array[i], Ω_2_array[length(Ω_2_array)-j+1]
         end
 
-        min_temp = 0.005
+        min_temp = cross_cutoff
         try
             min_temp = minimum( filter(row ->  row.Ω_1 == Ω_11 && row.Ω_2 == Ω_22, df).Δnn )
         catch
-            min_temp = 0.005
+            min_temp = cross_cutoff
         end
         Ω_1_ind = findfirst(Ω_1_array .== Ω_11)
         Ω_2_ind = findfirst(Ω_2_array .== Ω_22)
@@ -59,7 +64,10 @@ end
 
 ttl = "Floquet reson. at "*L"N="*string(N)*", "*L"\omega_0="*string(ω_0)*", "*L"\omega_1="*string(ω_1)*", "*L"\omega_2 = 2\omega_a"*", \n"*L"K="*string(round(K,sigdigits=3))*", "*L"g_n="*g_n*". All levels. Lin-scale."
 
-heatmap(Ω_1_array,Ω_2_array, matrix_color_2', xlab=L"\Omega_1",ylab=L"\Omega_2",title=ttl,guidefontsize=14,size=(700,600))
+K = (10*g_n[1]^2)/(3*ω_0) - 3*g_n[2]/2
+ϵ_1_array = Vector( range(0, ϵ_1_max*K, length=150) ) #convert back to ω_0 units
+ϵ_2_array = Vector( range(0, ϵ_2_max*K, length=200) ) #convert back to ω_0 units
+heatmap(Ω_1_array,Ω_2_array, matrix_color_2', xlab=L"\Omega_1",ylab=L"\Omega_2",title=ttl,guidefontsize=14)#,size=(700,600))
 
 
 df_floquet = DataFrame(CSV.File("data/floquet_resonances_full_backup.csv"))

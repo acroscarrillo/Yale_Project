@@ -1,8 +1,8 @@
 using StatsPlots # plotting for idiots
 using LaTeXStrings # latex support for sexy figs
 
-# df = DataFrame(CSV.File("data/floquet_resonances.csv"))
-df_floquet = DataFrame(CSV.File("data/floquet_resonances_full_backup.csv"))
+df = DataFrame(CSV.File("data/floquet_resonances.csv"))
+# df_floquet = DataFrame(CSV.File("data/floquet_resonances_full_backup.csv"))
 df_formatted = filter(row -> row.Δnn <= 0.000005, df_floquet)  # discard large crossings
 
 
