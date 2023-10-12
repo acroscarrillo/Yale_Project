@@ -8,12 +8,12 @@ using ProgressBars
 N = 200
 Δ = 0
 K = 1
-ϵ_1_array = Vector(0:0.03:10)
+ϵ_1_array = Vector(0.1:0.03:12)
 ϵ_2_array = Vector(0:0.07:10)
 cross_tol = 0.2 # distance at which two levels are considered to have crossed
 
 # Define crossing data form
-crossing_data = zeros( (N-1)*length(ϵ_1_array)*length(ϵ_2_array), 6 ) # data form: min(Δnn) | Δ | K | ϵ_1 | ϵ_2 | N ,  where Δnn is the difference between Nearest Neightbour levels
+crossing_data = zeros( length(ϵ_1_array)*length(ϵ_2_array), 6 ) # data form: min(Δnn) | Δ | K | ϵ_1 | ϵ_2 | N ,  where Δnn is the difference between Nearest Neightbour levels
 
 matrix_color = zeros(length(ϵ_2_array),length(ϵ_1_array))
 
@@ -35,12 +35,6 @@ for (i,ϵ_1) in enumerate(ϵ_1_array)
     end
 end
 
-
-ttl = L"H_{eff}"*" resonances at "*L"N="*string(N)*", "*L"\Delta="*string(Δ)*", "*L"K="*string(K)*".\n Color bar in lin scale. All levels considered."
-heatmap(ϵ_1_array,ϵ_2_array, matrix_color, xlab=L"\epsilon_1",ylab=L"\epsilon_2",title = ttl, guidefontsize=14)
-# savefig("figs/important_figs/h_eff_resonances_heatmap_linscale.png")
-
 # put crossing data in convenient DataFrame object & save it
 df_crossing = DataFrame(crossing_data, ["min(Δnn)", "Δ", "K", "ϵ_1", "ϵ_2","N"]) 
-# df_formatted = filter(row -> row.Δnn < 0.2, df_crossing)  # otherwise file is huge
 CSV.write("data/h_eff_heatmap_crossing.csv", df_crossing)

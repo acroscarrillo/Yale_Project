@@ -8,8 +8,8 @@ using ProgressBars
 N = 200
 Δ = 0
 K = 1
-ϵ_1_array = Vector(0:0.03:10)
-ϵ_2_array = Vector(0:0.07:10)
+ϵ_1_array = Vector(0.1:0.01:12)
+ϵ_2_array = Vector(0:0.01:10)
 cross_tol = 0.5 # distance at which two levels are considered to have crossed
 n_crossings = 199
 

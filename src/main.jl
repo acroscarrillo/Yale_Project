@@ -77,8 +77,6 @@ function H_0(N,ω_0,g_n)
     return  ω_0*A'*A + g_n'*expansion
 end
 
-
-
 """
     H_d(N)
 

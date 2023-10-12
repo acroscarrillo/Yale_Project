@@ -2,11 +2,13 @@ using StatsPlots # plotting for idiots
 using LaTeXStrings # latex support for sexy figs
 
 # df = DataFrame(CSV.File("data/floquet_resonances.csv"))
-df_floquet = DataFrame(CSV.File("data/floquet_resonances_full_backup.csv"))
+df_floquet = DataFrame(CSV.File("data/data_to_gitignore/floquet_resonances_full_backup.csv"))
 df_formatted = filter(row -> row.Δnn <= 0.000005, df_floquet)  # discard large crossings
 
 
 ttl = "Resonances at "*L"N="*string(N)*L",\omega_0="*string(ω_0)*L",K="*string(K)#*",tol="*string(cross_tol)
+
+ttl = ""
 
 xlb = L"\epsilon_1"
 ylb = L"\epsilon_2"
