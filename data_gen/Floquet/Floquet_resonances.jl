@@ -10,7 +10,7 @@ N = 30
 Δ = 0
 K = 1
 ϵ_1_max = 70*K
-ϵ_2_max = 26*K
+ϵ_2_max = 30*K
 
 # Define Floquet parameter space in units of ω_0
 
@@ -106,6 +106,6 @@ df_floquet = DataFrame(data_array, ["ϵ_n","Δnn","ω_0","Ω_1","ω_1","Ω_2","�
 # df_formatted = filter(row -> row.Δnn <= 0.0000032, df_floquet)  # discard large crossings
 # df_formatted = filter(row -> row.Δnn <= 0.000005, df_floquet)  # discard large crossings
 
-CSV.write("data/floquet_resonances_a_matrix_elements.csv", df_floquet)
+CSV.write("data/floquet_resonances.csv", df_formatted)
 
 # df_formatted = filter(row ->  row.n_cross == 1 && row.Ω_1 == 0 && row.Ω_2 == 0, df_floquet)
