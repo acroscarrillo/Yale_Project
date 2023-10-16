@@ -2,9 +2,7 @@ using DataFrames # this is like pandas
 using CSV 
 using ProgressBars
 using LaTeXStrings # latex support for sexy figs
-
-
-
+using ShiftedArrays: lag
 
 function df_first_ϵ_1_derivative(df,n,ϵ_2)
     df_temp = filter(row ->  row.ϵ_2 == ϵ_2 && row.cross_n == n, df)
@@ -57,7 +55,7 @@ plots = []
 
 second_derivative_mat = zeros((length(ϵ_2_array),length(ϵ_1_array[2:end-1])))
 for (j,ϵ_2) in ProgressBar(enumerate(ϵ_2_array))
-    second_derivative_mat[j,:] .= df_second_ϵ_1_derivative(df,6,ϵ_2)[2:end-1]
+    second_derivative_mat[j,:] .= df_second_ϵ_1_derivative(df,3,ϵ_2)[2:end-1]
 end
 
 first_derivative_mat = zeros((length(ϵ_2_array),length(ϵ_1_array[2:end])))
@@ -65,7 +63,7 @@ for (j,ϵ_2) in ProgressBar(enumerate(ϵ_2_array))
     first_derivative_mat[j,:] .= df_first_ϵ_1_derivative(df,4,ϵ_2)[2:end]
 end
 
-heatmap(ϵ_1_array[2:end],ϵ_2_array, log.(first_derivative_mat))#,xticks=([0,12],["0","12"]),yticks=([0,10],["0","10"])
+heatmap(ϵ_1_array[2:end],ϵ_2_array, first_derivative_mat)#,xticks=([0,12],["0","12"]),yticks=([0,10],["0","10"])
 
 
 

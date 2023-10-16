@@ -93,8 +93,8 @@ for (i,_) in enumerate(Ω_1_array)
 end
 
 K = (10*g_n[1]^2)/(3*ω_0) - 3*g_n[2]/2
-ϵ_1_array = Vector( range(0, ϵ_1_max*K, length=150) ) #convert back to ω_0 units
-ϵ_2_array = Vector( range(0, ϵ_2_max*K, length=200) ) #convert back to ω_0 units
+ϵ_1_array = Vector( range(0, ϵ_1_max, length=150) ) #convert back to ω_0 units
+ϵ_2_array = Vector( range(0, ϵ_2_max, length=200) ) #convert back to ω_0 units
 heatmap(ϵ_1_array,ϵ_2_array,log.(matrix_color'), xlab=L"\epsilon_1/\omega_0",ylab=L"\epsilon_2/\omega_0",title=L"N="*string(N))
 
 # ϵ_1_array = Vector( range(0, ϵ_1_max, length=150) )
