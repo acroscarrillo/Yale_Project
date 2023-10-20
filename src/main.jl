@@ -236,3 +236,6 @@ function Π(Ω_2,ω_2)
     return 2*Ω_2/(3*ω_2)
 end
 
+function H_cl(x,p,ϵ_1,ϵ_2)
+    return (x.^4 .+ p.^4 .+ 2 .* p.^2 .* x.^2)./4 - sqrt(2)*ϵ_1.*x - ϵ_2.*(x.^2 .- p.^2)
+end

@@ -48,9 +48,12 @@ end
 
 ttl = "Numerical theory, ILAS. "*L"("*"Inverse logarithmic anti-crossings spacing "*L"1/\log|\delta_{n,n+1}|)"
 heatmap_combined = heatmap(ϵ_1_array,ϵ_2_array,combined_mat,xlab=L"\epsilon_1/K",ylab=L"\epsilon_2/K",title=ttl,clim=(-10,3),titlefontsize=11,xtickfontsize=8,ytickfontsize=8,guidefont=font(12),height=400,colorbar=true,yticks=([2.5,5,7.5,10,12.5]),dpi=600, size=(720,400))#,yticks=([0,10],["0","10"])
-plot!(h_lines_pos, seriestype="hline",color="black",label=false,style=:dash)
-annotate!(1,h_lines_pos .+ .8,text.(hlines_labels, :black, :left, 12))
-scatter!(cross_loc,marker=:xcross,color=:limegreen,markersize=6,legend=false)
+h_lines_pos = range(2.5,12.5,length=10)
+v_lines_pos = range(0.5,13,length=11)
+plot!(h_lines_pos, seriestype="hline",color="black",label=false,style=:dash,alpha=0.3)
+plot!(v_lines_pos, seriestype="vline",color="black",label=false,style=:dash,alpha=0.3)
+# annotate!(1,h_lines_pos .+ .8,text.(hlines_labels, :black, :left, 12))
+# scatter!(cross_loc,marker=:xcross,color=:limegreen,markersize=6,legend=false)
 
 
 savefig("figs/important_figs/H_eff/H_eff_theory_resonances_oscillations.png")
