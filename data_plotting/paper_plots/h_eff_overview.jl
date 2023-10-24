@@ -108,5 +108,5 @@ global_title = plot(title = ttl, grid = false, showaxis = false, bottom_margin =
 
 plot(global_title,plots_array..., layout = l)
 
-savefig("figs/important_figs/H_eff/H_eff_overview.png")
-savefig("figs/important_figs/H_eff/H_eff_overview.pdf")
+# savefig("figs/important_figs/H_eff/H_eff_overview.png")
+# savefig("figs/important_figs/H_eff/H_eff_overview.pdf")

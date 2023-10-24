@@ -3,13 +3,18 @@ include("../../src/src.jl")
 using Plots
 using ProgressBars
 
+cross_loc = [(2.45,5.9),(5.5,7.6),(3.15,9.7),(3.9,3.8),(9.3,9.7),(10.8,7.2),(7.1,5.5),(6.75,11.25),(13.4,11.25) ]
+
+# scatter!(cross_loc,marker=:o,color=:red,markersize=6,legend=false)
+
 #########################
 # Lemniscate parameters #
 #########################
-x_array = Vector(range(-6,6,length=100)) #it's a bit choppy but oh well
+x_array = Vector(range(-8,8,length=100)) #it's a bit choppy but oh well
 p_array = Vector(range(-6,6,length=100))
 
-ϵ_1, ϵ_2 = 8, 8
+cross_n = 9
+ϵ_1, ϵ_2 = cross_loc[cross_n]
 
 l = @layout [potential lemni ] 
 
@@ -25,11 +30,20 @@ plot!(x_array, H_p0_cut_derivative.(x_array),label=L"dV(x)/dx")
 
 x_barrier = find_zeros(H_p0_cut_derivative,x_array[1],x_array[end])[2] #should be the middle value
 E_barrier = H_p0_cut(x_barrier)
-plot!([E_barrier],seriestype="hline",color="black",label=false,style=:dash)
-plot!([x_barrier],seriestype="vline",color="black",label=false,style=:dash)
+plot!([E_barrier],seriestype="hline",color="red",label=false,style=:dash)
+plot!([x_barrier],seriestype="vline",color="red",label=false,style=:dash)
 plot!([0],seriestype="vline",color="black",label=false,style=:solid)
 plot!([0],seriestype="hline",color="black",label=false,style=:solid)
 
+# x_barrier = find_zeros(H_p0_cut_derivative,x_array[1],x_array[end])[1] #should be the middle value
+# E_barrier = H_p0_cut(x_barrier)
+# plot!([E_barrier],seriestype="hline",color="green",label=false,style=:dash)
+# plot!([x_barrier],seriestype="vline",color="green",label=false,style=:dash)
+
+# x_barrier = find_zeros(H_p0_cut_derivative,x_array[1],x_array[end])[3] #should be the middle value
+# E_barrier = H_p0_cut(x_barrier)
+# plot!([E_barrier],seriestype="hline",color="blue",label=false,style=:dash)
+# plot!([x_barrier],seriestype="vline",color="blue",label=false,style=:dash)
 
 ####################
 # Plot lemniscates #
@@ -62,4 +76,4 @@ scatter!(H0_x_points_array,H0_p_points_array,markersize=1,color=:red,markerstrok
 # send it!
 plot(potential, lemni, layout = l,size=(750,400),dpi=650)
 
-# savefig("figs/important_figs/H_eff/lemniscate_plots.png")
+# savefig("figs/important_figs/H_eff/lemniscate_plot_cross_$cross_n.png")
