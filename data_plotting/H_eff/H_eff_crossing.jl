@@ -1,4 +1,4 @@
-include("../src/src.jl")
+include("../../src/src.jl")
 
 using StatsPlots
 using LaTeXStrings

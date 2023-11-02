@@ -148,7 +148,7 @@ Several performance comments are in order. Function `f!` is called many many tim
 """
 function f!(du,u, p, t)
     # -i*H(t) = -i*( H_0 + H_d*( Ω_1*cos(ω_1*t) + Ω_2*cos(ω_2*t) ) )
-    p[7] .= (+im) .* (p[1] .+ p[2] .* (p[3] .* cos(p[4]*t) .+ p[5] .* cos(p[6]*t)) )
+    p[7] .= (+im).*(p[1] .+ p[2] .* (p[3] .* cos(p[4]*t-π/2) .+ p[5] .* cos(p[6]*t-π/2)) )
     mul!(du, p[7], u) 
 end
 
@@ -176,7 +176,15 @@ end
 """
     qen_qmodes(N, ω_0, g_n, Ω_1, ω_1, Ω_2, ω_2)
 
-Return the Floquet quasienergies and quasimodes of H(N,ω_0,g_n,Ω_d,ω_d,t).Needs better documentation...
+Return the Floquet quasienergies and quasimodes of H(N,ω_0,g_n,Ω_d,ω_d,t). This function calls `H_0(N,ω_0,g_n)` and `H_d(N)` as documented in this file. If nothing has changed since this documentation was written, these two functions are given by 
+
+`H_0 = ω_0*A'*A + g_n'*expansion`,
+
+where `g_n'*expansion` is the dot product between non-linear coefficients and their corresponding non-linear terms `(a+a')^n /n` with `n`≥3 (see documentation of `H_0`), and
+
+`H_d = - 2*im*(a - a')`,
+
+which multiplies two `Ω_1*cos(ω_1 t)+Ω_1*cos(ω_1 t)` terms one for each drive. If in doubt, please check the source code of this functions and in particular of `f!` which is of fundamental importance.
 
 # Warning!!
 The period of the system is hard coded to be `2*pi/ω_2`, but this is not true in general! This is so because in the experiment, ω_0 ≈ ω_1 ≈ ω_2/2, so ω_2 will have the largest period (these guys are commensurable).
@@ -238,4 +246,8 @@ end
 
 function H_cl(x,p,ϵ_1,ϵ_2)
     return (x.^4 .+ p.^4 .+ 2 .* p.^2 .* x.^2)./4 - sqrt(2)*ϵ_1.*x - ϵ_2.*(x.^2 .- p.^2)
+end
+
+function H_cl(x,p,K,ϵ_1,ϵ_2)
+    return K*(x.^4 .+ p.^4 .+ 2 .* p.^2 .* x.^2)./4 - sqrt(2)*ϵ_1.*x - ϵ_2.*(x.^2 .- p.^2)
 end

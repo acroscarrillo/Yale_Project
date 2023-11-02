@@ -8,12 +8,12 @@ using Plots
 
 
 # Define parameter space
-N = 200
+N = 20
 Δ = 0
 K = 1
 
-ϵ_1_array = Vector(0.1:0.05:12)
-ϵ_2_array = Vector(0:0.05:10)
+ϵ_1_array = Vector(0.1:0.1:12)
+ϵ_2_array = Vector(0:0.1:15)
 
 n_crossings = 8
 
