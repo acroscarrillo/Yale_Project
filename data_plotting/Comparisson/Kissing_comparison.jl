@@ -16,7 +16,7 @@ df_formatted = filter(row -> row.ΔE_n <400 && row.ΔE_n >0, df_floquet)  # matc
 @df df_floquet plot(:ϵ_2, :ΔE_n, markersize = .5, xlab=xlbl, ylab=ylbl,seriestype=:scatter, legend=false)
 
 #import comparison data and plot it
-ttl = "Max and Rodri's ± issue.\\ MINUS. g_n="*string(g_n)
+ttl = "g_n="*string(g_n)
 df_comparison = DataFrame(CSV.File("data/kissing_comparison.csv"))
 df_formatted = filter(row -> row.ΔE_n < 300, df_comparison)  # match paper limits
 @df df_formatted plot(:ϵ_2, :ΔE_n, group=:Floquet, markersize = 1, xlab=xlbl, ylab=ylbl,seriestype=:scatter, legend=true,legendtitle="Floquet?",markerstrokewidth=0,title=ttl)

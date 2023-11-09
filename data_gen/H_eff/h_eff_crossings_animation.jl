@@ -12,10 +12,10 @@ N = 200
 Δ = 0
 K = 1
 
-ϵ_1_array = Vector(0.1:0.025:12)
-ϵ_2_array = Vector(0:0.05:10)
+ϵ_1_array = Vector(range(0.09189215798887447, 13.6919315403423, length=149))
+ϵ_2_array = Vector(range(0.08847694775666835, 17.61134098769294, length=199))
 
-n_levels = 10
+n_levels = 20
 
 # Define crossing data form
 data_array = zeros( n_levels*length(ϵ_1_array)*length(ϵ_2_array), 7 ) # data form: ΔE_n | n |  Δ | K | ϵ_1 | ϵ_2 | N,  where Δnn is the difference between Nearest Neightbour levels

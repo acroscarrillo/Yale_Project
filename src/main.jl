@@ -82,7 +82,7 @@ end
 
 Return the operator component of the time-dependent part of the experimental Kerr cat Hamiltonian as given in, for instance, Eq. (1) of https://arxiv.org/pdf/2209.03934.pdf. This is 
 
-`- 2*im*(a - a')`
+`- 1*im*(a - a')`
 
 Note this term does NOT depend on time, the full Hamiltonian would be `H = H_0 + H_d*Ω_d*cos(ω_d*t)` if it only has one drive.
 
@@ -153,27 +153,6 @@ function f!(du,u, p, t)
 end
 
 """
-    quasienergies(N, ω_0, g_n, Ω_d, ω_d)
-
-Return the Floquet quasienergies of H(N,ω_0,g_n,Ω_d,ω_d,t). Needs better documentation...
-
-# Warning!!
-The period of the system is hard coded to be `2*pi/ω_2`, but this is not true in general! This is so because in the experiment, ω_0 ≈ ω_1 ≈ ω_2/2, so ω_2 will have the largest period (these guys are commensurable).
-"""
-function quasienergies(N, ω_0, g_n, Ω_1, ω_1, Ω_2, ω_2)
-    p =  H_0(N,ω_0,g_n), H_d(N), Ω_1, ω_1, Ω_2, ω_2, ComplexF64.(zeros(N,N))
-    T = 2*pi/ω_2 #THIS IS NOT GENERAL, see documentation above.
-    tspan = (0.0, 2*T) # because rodrigo said so (need to understand this)
-    u_0 = ComplexF64.(Matrix(I(N)))
-    prob = ODEProblem(f!, u_0, tspan, p)
-    sol = solve(prob) 
-    U_2T = sol.u[end]
-    η_n, _ = eigen(U_2T)
-    ϵ_n = im*log.(η_n)/T
-    return mod.(real.(ϵ_n), ω_2/2)  # as they are mod(ω_d/2), cause we take T to be 2T.
-end
-
-"""
     qen_qmodes(N, ω_0, g_n, Ω_1, ω_1, Ω_2, ω_2)
 
 Return the Floquet quasienergies and quasimodes of H(N,ω_0,g_n,Ω_d,ω_d,t). This function calls `H_0(N,ω_0,g_n)` and `H_d(N)` as documented in this file. If nothing has changed since this documentation was written, these two functions are given by 
@@ -192,7 +171,7 @@ The period of the system is hard coded to be `2*pi/ω_2`, but this is not true i
 function qen_qmodes(N, ω_0, g_n, Ω_1, ω_1, Ω_2, ω_2)
     p =  H_0(N,ω_0,g_n), H_d(N), Ω_1, ω_1, Ω_2, ω_2, ComplexF64.(zeros(N,N))
     T = 2*pi/ω_2 #THIS IS NOT GENERAL, see documentation above.
-    tspan = (0.0, 2*T) # because rodrigo said so (need to understand this)
+    tspan = (0.0, T) 
     u_0 = ComplexF64.(Matrix(I(N)))
     prob = ODEProblem(f!, u_0, tspan, p)
     sol = solve(prob) 
@@ -217,6 +196,8 @@ julia> ω_a(1,[0.00075, 1.27*10^(-7)],0)
 
 (For the naive theorist:) Note that ω_a is almost equal to ω_0, but this difference is very important and yields notably different physics. Another way to put this is that, unlike what we are used to, the order of magnitude of constants and so on is not 1 but rather quite small. Note the order of g_n!
 
+# Warning!
+We are unsure if it is `(6*g_n[2]-9*g_n[1]^2/ω_0)*(2*Ω_2/(3*ω_0))^2` with a `-` or `(6*g_n[2]+9*g_n[1]^2/ω_0)*(2*Ω_2/(3*ω_0))^2` with a `+`. 
 ```
 """
 function ω_a(ω_0,g_n,Ω_2)

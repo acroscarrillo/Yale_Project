@@ -114,17 +114,22 @@ function fock_basis_to_spin_basis(L,n_ocupation)
     return spin_basis
 end
 
-function fock_op_to_spin_op(Op)
-    L = size(Op)[1]
-    if L > 18
-        Warn("Warning! spin chain exceeds L=18 with length $L.")
-    end
+# function fock_op_to_spin_op(Op)
+#     L = size(Op)[1]
+#     if L > 18
+#         Warn("Warning! spin chain exceeds L=18 with length $L.")
+#     end
 
-    spin_op = zeros(2^L,2^L)
-    for i=1:L
-        for j=1:L
+#     spin_op = zeros(2^L,2^L)
+#     for i=1:L
+#         for j=1:L
 
         
 
     
+# end
+
+function anharmonicity(H)
+    lamb, _ = eigen(H)
+    return lamb[3]+lamb[1]-2*lamb[2]
 end

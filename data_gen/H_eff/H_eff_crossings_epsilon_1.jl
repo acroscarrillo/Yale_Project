@@ -9,7 +9,7 @@ using CSV
 N = 30
 Δ = 0
 K = 1
-ϵ_1_array = Vector(0:0.01:10)
+ϵ_1_array = Vector(0:0.01:18)
 ϵ_2 = 1
 
 

@@ -6,7 +6,7 @@ using ProgressBars
 using Plots
 using LaTeXStrings
 
-N = 150    
+N = 70    
 
 ###################
 # Units suffering #
@@ -35,7 +35,7 @@ g_4 = g_4/ω_0_exp
 g_n = [g_3,g_4]
 # g_n = [-0.0025, -6.667*10^(-5)].*ω_0
 K = (10*g_n[1]^2)/(3*ω_0) - 3*g_n[2]/2
-Ω_1_array = Vector( range(0, (ϵ_1_max)/2, length=150) )[2:end]
+Ω_1_array = Vector( range(0, (ϵ_1_max)/2, length=150) )[2:3]
 Ω_2_array = Vector( range(0, 3*ϵ_2_max/(2*g_n[1]), length=200) )[2:end]
 
 
@@ -118,7 +118,7 @@ heatmap(ϵ_1_array_K,ϵ_2_array_K,r_array',xlab=L"\epsilon_1/K",ylab=L"\epsilon_
 # Put data in convenient DataFrame object and save it
 df_floquet = DataFrame(data_array, ["ϵ_n","Δnn","n","ϵ_2","ϵ_1"]) 
 
-CSV.write("data/floquet_resonances.csv", df_floquet)
+# CSV.write("data/floquet_resonances.csv", df_floquet)
 
 l = @layout [a b c d; e f g h]
 ϵ_2_cuts = [ϵ_2_array[1],ϵ_2_array[75],ϵ_2_array[125],ϵ_2_array[end]]
@@ -134,7 +134,7 @@ anim1 = @animate for ϵ_1 in ProgressBar(ϵ_1_array)
 
         df_temp = filter(row -> row.ϵ_1 == ϵ_1 && row.ϵ_2 ==  ϵ_2_cut, df_cohstates)
         x_avg = real(df_temp.ψ_α[1]'*(a(N)+a(N)')/√(2)*df_temp.ψ_α[1])
-        plot!([√(2)*x_avg],seriestype=:vline,c=:white,legend=false)
+        plot!([1.2*x_avg],seriestype=:vline,c=:white,legend=false)
 
         push!(plots_array,plot_temp)
     end
@@ -149,7 +149,7 @@ anim1 = @animate for ϵ_1 in ProgressBar(ϵ_1_array)
 
         plot_temp = heatmap(-10:0.1:10,-4:0.1:4,wigner_temp,title=L"\epsilon_2="*string(round(100*ϵ_2_cut/ϵ_2_array[end]))*"%,  "*L"\epsilon_1="*string(round(100*ϵ_1/ϵ_1_array[end]))*"%",clim=(-0.3,0.3),dpi=600,colorbar=false,titlefontsize=6)
 
-        plot!([x_avg],seriestype=:vline,c=:white,legend=false)
+        plot!([1.2*x_avg],seriestype=:vline,c=:white,legend=false)
 
         push!(plots_array,plot_temp)
     end
@@ -179,7 +179,7 @@ linea_fija(ϵ_1,ϵ_2) = 4*ϵ_2
 linea_primera(ϵ_1,ϵ_2) = 4*ϵ_1*sqrt(ϵ_2)
 anim = @animate for ϵ_2 in ProgressBar(ϵ_2_array)
     df_temp = filter(row -> row.ϵ_2 == ϵ_2, df_floquet)
-    scatter(df_temp.ϵ_1,df_temp.ϵ_n,ms=1,ylims=(0,.10),legend=false,title=L"\epsilon_2="*string(round(100*ϵ_2/ϵ_2_array[end]))*"%",markerstrokewidth=0,c=:black,dpi=600)
+    scatter(df_temp.ϵ_1,df_temp.ϵ_n,ms=1,ylims=(0.9,1),legend=false,title=L"\epsilon_2="*string(round(100*ϵ_2/ϵ_2_array[end]))*"%",markerstrokewidth=0,c=:black,dpi=600)
     plot!(df_temp.ϵ_1, linea_negra.(df_temp.ϵ_1,ϵ_2),linestyle=:dash,color=:red)
     plot!(df_temp.ϵ_1, linea_fija.(df_temp.ϵ_1,ϵ_2),linestyle=:dash,color=:red)
     plot!(df_temp.ϵ_1, linea_primera.(df_temp.ϵ_1,ϵ_2),linestyle=:dash,color=:blue)
