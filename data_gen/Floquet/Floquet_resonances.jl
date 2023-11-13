@@ -38,11 +38,11 @@ K = (10*g_n[1]^2)/(3*ω_0) - 3*g_n[2]/2
 Ω_2_array = Vector( range(0, 3*ϵ_2_max/(2*g_n[1]), length=200) )
 
 
-Ω_1_max = Ω_1_array[end]
-Ω_2_max = Ω_2_array[end]
+Ω_1_maxx = Ω_1_array[end]
+Ω_2_maxx = Ω_2_array[end]
 
-ϵ_1_max = 2*Ω_1_max # check: in ω_0 units like in above 
-ϵ_2_max = Ω_2_max*2*g_n[1]/(3*ω_0) # check: in ω_0 units like in above 
+ϵ_1_max = 2*Ω_1_maxx # check: in ω_0 units like in above 
+ϵ_2_max = Ω_2_maxx*2*g_n[1]/(3*ω_0) # check: in ω_0 units like in above 
 
 # cross_tol = ω_2/(2*100) # distance at which two levels are considered to have crossed
 n_cross = N-1
@@ -53,7 +53,6 @@ data_array = zeros( n_cross*length(Ω_1_array)*length(Ω_2_array), 11 ) # data f
 
 # The following is used to find ϵ_0 as described in the paper for your eyes only
 E_0 , V_0_array = eigen(H_0(N,ω_0,g_n))
-
 
 matrix_color = zeros(length(Ω_1_array),length(Ω_2_array))
 r_array = zeros(length(Ω_1_array),length(Ω_2_array))
@@ -71,7 +70,8 @@ for (i,_) in enumerate(Ω_1_array)
 
         ω_2 = 2*ω_a(ω_0,g_n,Ω_2)
         ω_1 = ω_2/2
-        ϵ_2 = g_n[1]*Π(Ω_2,ω_2)
+        Π_temp = 2*Ω_2/(3*ω_2)
+        ϵ_2 = g_n[1]*Π_temp
         ϵ_1 = 2*Ω_1
         
         ϵ_n, ϕ_n = qen_qmodes(N, ω_0, g_n, Ω_1, ω_1, Ω_2, ω_2)

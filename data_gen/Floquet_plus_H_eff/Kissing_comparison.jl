@@ -44,7 +44,7 @@ CSV.write("data/h_eff_kissing.csv", df_h_eff)
 # Floquet code #
 ################
 
-# Define Floquet parameter space
+# Define Floquet parameter space, in units of ω_0
 ω_0 = 1
 # g_n = [0.00075, 1.27*10^(-7)].*ω_0 # exact match with H_eff
 g_n = [-0.000975, -0.0000133].*ω_0 # experimental values
@@ -56,7 +56,7 @@ K = (10*g_n[1]^2)/(3*ω_0) - 3*g_n[2]/2
 
 # Define data form
 floquet_data_array = zeros( N*length(Ω_2_array), 3 ) # data form: Δϵ_n | ω_0 | g_3 | g_4 | Ω_1 | ω_1 | Ω_2 | ω_2 | K | ϵ_2/K | N | theory
-
+0
 # The following is used to find ϵ_0 as described in the paper for your eyes only
 E_n , V_n = eigen(H_0(N,ω_0,g_n))
 V_0 = V_n[:, 1]

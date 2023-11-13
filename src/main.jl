@@ -170,14 +170,14 @@ The period of the system is hard coded to be `2*pi/ω_2`, but this is not true i
 """
 function qen_qmodes(N, ω_0, g_n, Ω_1, ω_1, Ω_2, ω_2)
     p =  H_0(N,ω_0,g_n), H_d(N), Ω_1, ω_1, Ω_2, ω_2, ComplexF64.(zeros(N,N))
-    T = 2*pi/ω_2 #THIS IS NOT GENERAL, see documentation above.
-    tspan = (0.0, T) 
+    T_d2 = 2*pi/ω_2 #THIS IS NOT GENERAL, see documentation above.
+    tspan = (0.0, 2*T_d2) 
     u_0 = ComplexF64.(Matrix(I(N)))
     prob = ODEProblem(f!, u_0, tspan, p)
     sol = solve(prob) 
     U_2T = sol.u[end]
     η_n, ϕ_n = eigen(U_2T)
-    ϵ_n = im*log.(η_n)/T
+    ϵ_n = im*log.(η_n)/(2*T_d2)
     return mod.(real.(ϵ_n), ω_2/2), ϕ_n  # as they are mod(ω_d/2)
 end
 
@@ -221,8 +221,19 @@ julia> Π(1,1)
 
 ```
 """
-function Π(Ω_2,ω_2)
-    return 2*Ω_2/(3*ω_2)
+function Π(ω_0,Ω_2,ω_2)
+    return (Ω_2*ω_2)/(ω_2^2-ω_0^2)
+end
+# function Π(Ω_2,ω_2)
+#     return 2*Ω_2/(3*ω_2)
+# end
+
+function Ω_1_max_by_ω_0(K_by_ω_0,ϵ_1_array_by_K)
+    return (ϵ_1_array_by_K[end]*K_by_ω_0)*2
+end
+
+function Ω_2_max_by_ω_0(K_by_ω_0,g_n_by_ω_0,ϵ_2_array_by_K)
+    return 3*(ϵ_2_array_by_K[end]*K_by_ω_0)/(2*g_n_by_ω_0[1])
 end
 
 function H_cl(x,p,ϵ_1,ϵ_2)

@@ -6,7 +6,7 @@ using ProgressBars
 using Plots
 using LaTeXStrings
 
-N = 70    
+N = 30    
 
 ###################
 # Units suffering #
@@ -35,15 +35,16 @@ g_4 = g_4/ω_0_exp
 g_n = [g_3,g_4]
 # g_n = [-0.0025, -6.667*10^(-5)].*ω_0
 K = (10*g_n[1]^2)/(3*ω_0) - 3*g_n[2]/2
-Ω_1_array = Vector( range(0, (ϵ_1_max)/2, length=150) )[2:3]
+Ω_1_array = Vector( range(0, (ϵ_1_max)/2, length=150) )[2:end]
 Ω_2_array = Vector( range(0, 3*ϵ_2_max/(2*g_n[1]), length=200) )[2:end]
 
 
-Ω_1_max = Ω_1_array[end]
-Ω_2_max = Ω_2_array[end]
+Ω_1_maxx = Ω_1_array[end]
+Ω_2_maxx = Ω_2_array[end]
 
-ϵ_1_max = 2*Ω_1_max # check: in ω_0 units like in above 
-ϵ_2_max = Ω_2_max*2*g_n[1]/(3*ω_0) # check: in ω_0 units like in above 
+ϵ_1_max = 2*Ω_1_maxx # check: in ω_0 units like in above 
+ϵ_2_max = Ω_2_maxx*2*g_n[1]/(3*ω_0) # check: in ω_0 units like in above 
+
 
 # Define data form
 data_array = zeros( (N-1)*length(Ω_1_array)*length(Ω_2_array), 5 ) # data form: ϵ_n | Δnn | ω_0 | Ω_1 | ω_1 | Ω_2 | ω_2 | K | ϵ_2 | ϵ_1 | N 
@@ -66,7 +67,8 @@ for (i,Ω_1) in enumerate(Ω_1_array)
 
         # calculate simulation parameters
         ω_1, ω_2 = ω_a(ω_0,g_n,Ω_2), 2*ω_a(ω_0,g_n,Ω_2)
-        ϵ_1, ϵ_2 = Ω_1/2, g_n[1]*Π(Ω_2,ω_2)
+        Π_temp = 2*Ω_2/(3*ω_2)
+        ϵ_1, ϵ_2 = Ω_1/2, g_n[1]*Π_temp
         ϵ_1_array[i], ϵ_2_array[j] = ϵ_1, ϵ_2
 
         # Floquet 
