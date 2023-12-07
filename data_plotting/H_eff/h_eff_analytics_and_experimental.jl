@@ -2,7 +2,7 @@ using DataFrames # this is like pandas
 using CSV 
 using ProgressBars
 using LaTeXStrings # latex support for sexy figs
-
+using NPZ
 
 function find_barrier_height(ϵ_1,ϵ_2)
     H_p0_cut(x) = H_cl(x,0,ϵ_1,ϵ_2)
@@ -74,13 +74,14 @@ exp_data = npzread("data/experimental/DecayData.npz")
 K_exp = 0.505 # MHz or 505KHz
 
 heatmap_mat_exp = exp_data["arr_2"] # μs, but irrelant for now
+ϵ_1_array_exp = exp_data["arr_0"][1,:] # MHz
+ϵ_2_array_exp = exp_data["arr_1"][:,1] # MHz
 
 for (j,ϵ2) in enumerate(ϵ_2_array_exp)
     heatmap_mat_exp[j,:] .= movingaverage(heatmap_mat_exp[j,:],1).x .- movingaverage(heatmap_mat_exp[j,:],50).x
 end
 
-ϵ_1_array_exp = exp_data["arr_0"][1,:] # MHz
-ϵ_2_array_exp = exp_data["arr_1"][:,1] # MHz
+
 
 ϵ_1_array_exp = ϵ_1_array_exp./K_exp # Units of Kerr
 ϵ_2_array_exp = ϵ_2_array_exp./K_exp # Units of Kerr
