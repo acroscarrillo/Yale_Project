@@ -3,6 +3,7 @@ using CSV
 using ProgressBars
 using LaTeXStrings # latex support for sexy figs
 using NPZ
+using Plots
 
 # Define plot structure
 l = @layout [ttl; experiment; theory ] #a{.5h}

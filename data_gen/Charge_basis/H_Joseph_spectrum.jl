@@ -1,26 +1,28 @@
 include("../../src/main_charge_basis.jl") # import charge basis stuff
 
-N = 101
+N = 501
 E_J = 1 #in units of E_J
+E_C = 1/5907
 m = 3
-
 α = 0.1
-ϕ_ext_array = Vector( 0:0.1:0.001)
+ϕ_ext = π*2
 
-spectrum_array = zeros(N,length(ϕ_ext_array))
-for (n,ϕ) in enumerate(ϕ_ext_array)
-    spectrum_array[n,:] = eigen(H_joseph(N,α,E_J,ϕ,m)).values
+
+E,V = eigen(H_joseph(N,E_J,α,ϕ_ext,m))
+
+plot(norm.(V[:,1]))
+plot(norm.(V[:,1:7]),legend=true)
+
+left_E = []
+middle_E = []
+right_E = []
+for (j,e) in enumerate(E)
+    if isodd(j)
+        push!(left_E,e)
+    else
+        push!(right_E,e)
+    end
 end
-
-heatmap(spectrum_array)
-
-
-α_array = Vector( 0:0.01:1)
-ϕ_ext = 1
-
-spectrum_array = zeros(N,length(α_array))
-for (n,α) in enumerate(α_array)
-    spectrum_array[n,:] = eigen(H_joseph(N,α,E_J,ϕ_ext,m)).values
-end
-
-heatmap(spectrum_array)
+reverse!(left_E)
+E_2_plot = vcat(left_E,right_E)
+plot(E_2_plot)

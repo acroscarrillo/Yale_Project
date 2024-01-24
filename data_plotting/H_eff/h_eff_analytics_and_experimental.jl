@@ -1,8 +1,15 @@
+include("../../src/src.jl") # import charge basis stuff
+
 using DataFrames # this is like pandas
 using CSV 
 using ProgressBars
 using LaTeXStrings # latex support for sexy figs
 using NPZ
+using EasyFit
+using Roots
+using Flux
+using JLD
+
 
 function find_barrier_height(ϵ_1,ϵ_2)
     H_p0_cut(x) = H_cl(x,0,ϵ_1,ϵ_2)
@@ -77,16 +84,20 @@ heatmap_mat_exp = exp_data["arr_2"] # μs, but irrelant for now
 ϵ_1_array_exp = exp_data["arr_0"][1,:] # MHz
 ϵ_2_array_exp = exp_data["arr_1"][:,1] # MHz
 
+# remove the upward trend
 for (j,ϵ2) in enumerate(ϵ_2_array_exp)
     heatmap_mat_exp[j,:] .= movingaverage(heatmap_mat_exp[j,:],1).x .- movingaverage(heatmap_mat_exp[j,:],50).x
 end
 
-
-
 ϵ_1_array_exp = ϵ_1_array_exp./K_exp # Units of Kerr
 ϵ_2_array_exp = ϵ_2_array_exp./K_exp # Units of Kerr
 
-heatmap_exp = heatmap(ϵ_1_array_exp[1:end-20],ϵ_2_array_exp,heatmap_mat_exp[1:end,1:end-20],xlab=L"\epsilon_1/K",ylab=L"\epsilon_2/K",title="Experiment",titlefontsize=12,xtickfontsize=8,ytickfontsize=8,guidefont=font(12),height=400,colorbar=true,dpi=600, size=(720,400),clim=(-125,80))
+
+# without trend formatting
+# heatmap(ϵ_1_array_exp,ϵ_2_array_exp,heatmap_mat_exp,xlab=L"\epsilon_x/K",ylab=L"\epsilon_2/K",title="",titlefontsize=12,xtickfontsize=12,ytickfontsize=12,guidefont=font(16),height=400,colorbar=true,dpi=600, size=(720,400),cbar_title="\nLifetime "*L"T_{coh}(\mu s)",widen=false,tickdirection=:out,right_margin = 8Plots.mm,colorbar_tickfontsize=16,left_margin = 3Plots.mm,bottom_margin = 3Plots.mm)
+
+# with trend formatting
+heatmap(ϵ_1_array_exp[1:end-20],ϵ_2_array_exp,heatmap_mat_exp[1:end,1:end-20],xlab=L"\epsilon_x/K",ylab=L"\epsilon_2/K",title="",titlefontsize=12,xtickfontsize=14,ytickfontsize=14,guidefont=font(16),height=400,colorbar=false,dpi=600, size=(720,400),clim=(-125,80),cbar_title="Lifetime",widen=false,tickdirection=:out,right_margin = 8Plots.mm,colorbar_tickfontsize=16,left_margin = 3Plots.mm,bottom_margin = 3Plots.mm)
 
 ################
 # Area Heatmap #
@@ -112,6 +123,11 @@ heatmap_exp = heatmap(ϵ_1_array_exp[1:end-20],ϵ_2_array_exp,heatmap_mat_exp[1:
 #     end
 # end
 
+# save("data/well_area_matrices.jld", "left", left_well_area_matrix, "right", right_well_area_matrix)
+
+left_well_area_matrix = load("data/well_area_matrices.jld", "left")
+right_well_area_matrix = load("data/well_area_matrices.jld", "right")
+
 # contour(ϵ_1_array,ϵ_2_array,left_well_area_matrix')
 # contour!(ϵ_1_array,ϵ_2_array,right_well_area_matrix')
 
@@ -120,16 +136,22 @@ heatmap_exp = heatmap(ϵ_1_array_exp[1:end-20],ϵ_2_array_exp,heatmap_mat_exp[1:
 ###################
 # plot(ϵ_1_array,(2*ϵ_1_array).^(2/3),ylim=(2.5,12),linestyle=:solid,legend=false,lw=2,xlab=L"\epsilon_1/K",ylab=L"\epsilon_2/K",dpi=600)
 
-plot!(ϵ_1_array,(ϵ_1_array/1).^2,ylim=(2.5,12),legend=false,linewidth=1.5,alpha=0.5,linestyle=:solid,dpi=600,xlab=L"\epsilon_1/K",ylab=L"\epsilon_2/K",c=:limegreen)
-plot!(ϵ_1_array,(ϵ_1_array/2).^2,ylim=(2.5,12),legend=false,linewidth=1.5,alpha=0.5,linestyle=:solid,c=:limegreen)
-plot!(ϵ_1_array,(ϵ_1_array/3).^2,ylim=(2.5,12),legend=false,linewidth=1.5,alpha=0.5,linestyle=:solid,c=:limegreen)
-plot!(ϵ_1_array,(ϵ_1_array/4).^2,ylim=(2.5,12),legend=false,linewidth=1.5,alpha=0.5,linestyle=:solid,c=:limegreen)
+plot!(ϵ_1_array,(ϵ_1_array/1).^2,ylim=(2.5,12),legend=false,linewidth=2,alpha=0.5,linestyle=:solid,dpi=600,c=:limegreen)
+plot!(ϵ_1_array,(ϵ_1_array/2).^2,ylim=(2.5,12),legend=false,linewidth=2,alpha=0.5,linestyle=:solid,c=:limegreen)
+plot!(ϵ_1_array,(ϵ_1_array/3).^2,ylim=(2.5,12),legend=false,linewidth=2,alpha=0.5,linestyle=:solid,c=:limegreen)
+plot!(ϵ_1_array,(ϵ_1_array/4).^2,ylim=(2.5,12),legend=false,linewidth=2,alpha=0.5,linestyle=:solid,c=:limegreen)
+
+
+plot!(ϵ_1_array,(ϵ_1_array/1).^2,ylim=(2.5,12),legend=false,linewidth=2,alpha=0.5,linestyle=:solid,dpi=600,c=:limegreen)
+plot!(ϵ_1_array,(ϵ_1_array/2).^2,ylim=(2.5,12),legend=false,linewidth=2,alpha=0.5,linestyle=:solid,c=:limegreen)
+plot!(ϵ_1_array,(ϵ_1_array/3).^2,ylim=(2.5,12),legend=false,linewidth=2,alpha=0.5,linestyle=:solid,c=:limegreen)
+plot!(ϵ_1_array,(ϵ_1_array/4).^2,ylim=(2.5,12),legend=false,linewidth=2,alpha=0.5,linestyle=:solid,c=:limegreen)
 
 
 ###################
 # Equi-Area plots #
 ###################
-plot!(contour_line(left_well_area_matrix,ϵ_1_array,ϵ_2_array,2*π*0, 0.05),ylim=(2.5,12),lw=1,alpha=0.25,c=:white)
+# plot!(contour_line(left_well_area_matrix,ϵ_1_array,ϵ_2_array,2*π*0, 0.05),ylim=(2.5,12),lw=1,alpha=0.25,c=:white)
 
 plot!(contour_line(left_well_area_matrix,ϵ_1_array,ϵ_2_array,2*π*0.5, 0.05),ylim=(2.5,12),lw=1.5,alpha=0.5,c=:white)
 plot!(contour_line(right_well_area_matrix,ϵ_1_array,ϵ_2_array,2*π*0.5, 0.05),ylim=(2.5,12),lw=1.5,alpha=0.5,c=:white)
@@ -146,9 +168,13 @@ plot!(contour_line(right_well_area_matrix,ϵ_1_array,ϵ_2_array,2*π*3.5, 0.05),
 plot!(contour_line(left_well_area_matrix,ϵ_1_array,ϵ_2_array,2*π*4.5, 0.05),ylim=(2.5,12),lw=1.5,alpha=0.5,c=:white)
 plot!(contour_line(right_well_area_matrix,ϵ_1_array,ϵ_2_array,2*π*4.5, 0.05),ylim=(2.5,12),lw=1.5,alpha=0.5,c=:white)
 
-plot!(contour_line(left_well_area_matrix,ϵ_1_array,ϵ_2_array,2*π*5.5, 0.05),ylim=(2.5,12),lw=1.5,alpha=0.5,c=:white)
+# plot!(contour_line(left_well_area_matrix,ϵ_1_array,ϵ_2_array,2*π*5.5, 0.05),ylim=(2.5,12),lw=1.5,alpha=0.5,c=:white)
 plot!(contour_line(right_well_area_matrix,ϵ_1_array,ϵ_2_array,2*π*5.5, 0.05),ylim=(2.5,12),lw=1.5,alpha=0.5,c=:white)
 
 # plot!(ϵ_1_array[1:160],(-4.7*(ϵ_1_array[1:160] .- 7.5)).^(1/2) .+ 5,c=:white)
 
-# savefig("figs/important_figs/H_eff/analytics_and_experimental.png")
+savefig("figs/important_figs/H_eff/analytics_and_experimental.png")
+savefig("figs/important_figs/H_eff/analytics_and_experimental.pdf")
+savefig("figs/important_figs/H_eff/analytics_and_experimental.svg")
+
+

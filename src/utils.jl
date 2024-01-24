@@ -1,7 +1,7 @@
 using QuantumOptics # to plot wigner functions
 using Roots # to find minimas 
 using Flux # to find gradients for minimas 
-using Test # to throw warning
+# using Test # to throw warning
 
 # utility code goes here
 function coherent_state(N,α)
@@ -95,24 +95,24 @@ function wigner_func(ψ,xlim,plim,meshstep=0.1)
 end
 
 # Spin  stuff
-function decimal_to_bit(L,n)
-    if n > (2^L-1)
-        max_fock = 2^L-1
-        throw(ArgumentError("Number state |$n> cannot be represented in a spin chain of length L=$L. You may at most represent |$max_fock>."))
-    end
-    bitstring_rep = bitstring(Int32(n))
-    bit_array = zeros(L)
-    for (i,character) in enumerate( bitstring_rep[end-L+1:end] )
-        bit_array[i] = parse(Int64,character)
-    end
-    return bit_array
-end
+# function decimal_to_bit(L,n)
+#     if n > (2^L-1)
+#         max_fock = 2^L-1
+#         throw(ArgumentError("Number state |$n> cannot be represented in a spin chain of length L=$L. You may at most represent |$max_fock>."))
+#     end
+#     bitstring_rep = bitstring(Int32(n))
+#     bit_array = zeros(L)
+#     for (i,character) in enumerate( bitstring_rep[end-L+1:end] )
+#         bit_array[i] = parse(Int64,character)
+#     end
+#     return bit_array
+# end
 
-function fock_basis_to_spin_basis(L,n_ocupation)
-    spin_basis = zeros(2^L)
-    spin_basisn_ocupation
-    return spin_basis
-end
+# function fock_basis_to_spin_basis(L,n_ocupation)
+#     spin_basis = zeros(2^L)
+#     spin_basisn_ocupation
+#     return spin_basis
+# end
 
 # function fock_op_to_spin_op(Op)
 #     L = size(Op)[1]
